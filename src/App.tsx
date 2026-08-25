@@ -1,6 +1,6 @@
 
-import ClientForm from './ClientForm'
-import ClientList from './ClientList'
+import MainLaoyout from './MainLayout';
+import Sidebar from './Sidebar';
 import { useState } from "react";
 
 
@@ -21,13 +21,9 @@ const deleteClient = (clientToDelete: {name: string, phone: string}) => {
   return (
     <>
       <h1>Callback Clinic</h1>
-      <div>
-      <ClientList clients = {clients}
-      onDeleteClient={deleteClient}/>
-      </div>
-      <div>
-      <ClientForm onAddClient={addClient}/>
-      </div>
+      <MainLaoyout clients={clients}
+      addClient={addClient}
+      deleteClient={deleteClient}/>
       
     </>
   )
