@@ -1,6 +1,6 @@
 function Sidebar() {
     return(
-        <aside>
+        <aside className="sidebar">
             <h2>Callback Clinic</h2>
             <nav>
                 Dashboard

@@ -2,7 +2,7 @@ import Sidebar from "./Sidebar";
 import ClientList from "./ClientList";
 import ClientForm from "./ClientForm";
 
-function MainLaoyout(
+function MainLayout(
     {clients, deleteClient, addClient}:
     {clients:{
         name: string; phone: string
@@ -13,12 +13,14 @@ function MainLaoyout(
 ){
 return(
     <>
-    <Sidebar/>
-    <main>
+    <div className="layout">
+        <Sidebar/>
+        <main className="main-content">
         <ClientList clients = {clients}
         onDeleteClient={deleteClient}/>
         <ClientForm onAddClient={addClient}/>
-    </main>
+        </main>
+    </div>
     </>
 )
-}export default MainLaoyout
+}export default MainLayout

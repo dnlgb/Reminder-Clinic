@@ -1,9 +1,7 @@
 
-import MainLaoyout from './MainLayout';
-import Sidebar from './Sidebar';
 import { useState } from "react";
-
-
+import MainLayout from "./MainLayout";
+import './App.css'
 function App() {
 
 const [clients, setClients] = useState<({ name: string; phone: string }[])> ([])
@@ -17,14 +15,14 @@ const deleteClient = (clientToDelete: {name: string, phone: string}) => {
   )
 }
 
-
   return (
     <>
       <h1>Callback Clinic</h1>
-      <MainLaoyout clients={clients}
-      addClient={addClient}
-      deleteClient={deleteClient}/>
-      
+      <div>
+        <MainLayout clients={clients}
+        addClient={addClient}
+        deleteClient={deleteClient}/>
+      </div>
     </>
   )
 }
