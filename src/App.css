@@ -1,14 +1,52 @@
 *{
   box-sizing: border-box;
+  
 }
 
 .layout{
   display: flex;
 }
+
 .sidebar{
   width: 250px;
-  height: 100vh;
+  height: 90vh; 
+  box-sizing: border-box;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.sidebar h2{
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+.sidebar a{
+  text-decoration: none;
+  text-align: left;
+  color: #fff;
+  padding: 10px;
+  font-size: 16px;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+.sidebar a:hover{
+  color: #3a3636;
+  background: #e0e0e0;
+  transition: background 1s;
+  
+}
 
+.sidebar-nav{
+  display: flex;
+  flex-direction:  column;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.sidebar-user{
+  display: block;
+  border-top: 1px solid;
+  padding-top: 10px;
 }
 .main-content{
   flex: 1;
@@ -16,4 +54,37 @@
   display: flex;
   flex-direction: column;
   gap: 24px;
+  
+}
+.dashboard-summary{
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+.pending-card,
+.today-card,
+.full-card {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.pending-card span,
+.pending-card strong,
+.today-card span,
+.today-card strong,
+.full-card span,
+.full-card strong {
+  display: block;
+}
+.pending-card span, 
+.today-card span,
+.full-card span {
+  margin-bottom: 10px;
+}
+.pending-card strong,
+.today-card strong,
+.full-card strong{
+  font-size: 28px;
 }

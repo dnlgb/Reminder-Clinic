@@ -1,6 +1,7 @@
 import Sidebar from "./Sidebar";
 import ClientList from "./ClientList";
 import ClientForm from "./ClientForm";
+import DashboardSummary from "./DashboardSummary";
 
 function MainLayout(
     {clients, deleteClient, addClient}:
@@ -13,12 +14,16 @@ function MainLayout(
 ){
 return(
     <>
+
     <div className="layout">
         <Sidebar/>
         <main className="main-content">
-        <ClientList clients = {clients}
-        onDeleteClient={deleteClient}/>
-        <ClientForm onAddClient={addClient}/>
+            <DashboardSummary pending={clients.length}
+            callbackT={clients.length}
+            callbackComp={clients.length}/>
+            <ClientList clients = {clients}
+                onDeleteClient={deleteClient}/>
+            <ClientForm onAddClient={addClient}/>
         </main>
     </div>
     </>
