@@ -18,9 +18,7 @@ return(
     <div className="layout">
         <Sidebar/>
         <main className="main-content">
-            <DashboardSummary pending={clients.length}
-            callbackT={clients.length}
-            callbackComp={clients.length}/>
+            <DashboardSummary/>
             <ClientList clients = {clients}
                 onDeleteClient={deleteClient}/>
             <ClientForm onAddClient={addClient}/>

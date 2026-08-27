@@ -1,30 +1,20 @@
-function DashboardSummary (
-    {pending, callbackT, callbackComp}: {
-        pending: number
-        callbackT: number
-        callbackComp: number
-    }
+import StatCard from "./StatCard"
 
-    
-) {
+function DashboardSummary () {
     return(
     <>
         <section className="dashboard-summary">
-            <div className="pending-card">
-                <span>Pending:</span>
-                <strong >{pending}</strong>
-                <span>Callbacks</span>
-            </div>
-            <div className="today-card">
-                <span>Today:</span>
-                <strong>{callbackT}</strong>
-                <span>Callback</span>
-            </div>
-            <div className="full-card">
-                <span>Completed</span>
-                <strong>{callbackComp}</strong>
-                <span>Callback</span>
-            </div>
+            <StatCard title={"Pending"}
+                value={5}
+                label={"Callback"}/>
+            <StatCard title={"Today"}
+                value={3}
+                label={"Callback"}/>
+            <StatCard title={"Completed"}
+                value={10}
+                label={"Callback"}/>
+            
+            
         </section>
     </>
     )

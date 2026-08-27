@@ -61,30 +61,20 @@
   grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
 }
-.pending-card,
-.today-card,
-.full-card {
+.stat-card{
   background: #ffffff;
   border-radius: 8px;
   padding: 20px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
-.pending-card span,
-.pending-card strong,
-.today-card span,
-.today-card strong,
-.full-card span,
-.full-card strong {
+.stat-card span,
+.stat-card strong{
   display: block;
 }
-.pending-card span, 
-.today-card span,
-.full-card span {
+.stat-card span{
   margin-bottom: 10px;
 }
-.pending-card strong,
-.today-card strong,
-.full-card strong{
+.stat-card strong{
   font-size: 28px;
 }
