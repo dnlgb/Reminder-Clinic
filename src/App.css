@@ -65,6 +65,9 @@
   background: #ffffff;
   border-radius: 8px;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
@@ -74,7 +77,27 @@
 }
 .stat-card span{
   margin-bottom: 10px;
+  font-size: 14px;
+  color: #787d87;
 }
 .stat-card strong{
   font-size: 28px;
+  font-weight: 900;
+  color: #343232;
+}
+
+.callback-list{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.callback-dataR{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  
+  justify-content: space-between;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
 }

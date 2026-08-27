@@ -2,7 +2,7 @@ import Sidebar from "./Sidebar";
 import ClientList from "./ClientList";
 import ClientForm from "./ClientForm";
 import DashboardSummary from "./DashboardSummary";
-
+import PendingCallbacks from "./PendingCallbacks";
 function MainLayout(
     {clients, deleteClient, addClient}:
     {clients:{
@@ -19,6 +19,7 @@ return(
         <Sidebar/>
         <main className="main-content">
             <DashboardSummary/>
+            <PendingCallbacks/>
             <ClientList clients = {clients}
                 onDeleteClient={deleteClient}/>
             <ClientForm onAddClient={addClient}/>
