@@ -46,9 +46,9 @@ function PendingCallbacks() {
         <section>
             <h2>Pending</h2>
             <div className="callback-list">
-                {callbacks.map((callback) => (
+                {callbacks.filter((currentCallback) => 
+                currentCallback.status === "pending").map((callback) =>
                 <div className="callback-dataR" key={callback.id}>
-                    
                     <span>{callback.patient}</span>
                     <strong>{callback.date}</strong>
                     <span>{callback.reason}</span>
@@ -60,7 +60,7 @@ function PendingCallbacks() {
                     }}
                     >Boton</button>
                 </div>
-                ))}
+                )}
             </div>    
         </section>
     )
