@@ -2,6 +2,11 @@
 import { useState } from "react";
 import MainLayout from "./MainLayout";
 import './App.css'
+import { Routes } from "react-router-dom";
+import { Route } from "react-router-dom";
+import ClientList from "./ClientList";
+import ClientForm from "./ClientForm";
+import DashboardSummary from "./DashboardSummary";
 function App() {
 
 const [clients, setClients] = useState<({ name: string; phone: string }[])> ([])
@@ -18,11 +23,23 @@ const deleteClient = (clientToDelete: {name: string, phone: string}) => {
   return (
     <>
       <h1>Callback Clinic</h1>
-      <div>
-        <MainLayout clients={clients}
-        addClient={addClient}
-        deleteClient={deleteClient}/>
-      </div>
+      <Routes>
+        <Route element={<MainLayout />}>
+        <Route path="/" element={<DashboardSummary/>}/>
+        <Route
+          path="/clients"
+          element={
+          <>
+          <ClientForm onAddClient={addClient} />
+          <ClientList
+            clients={clients}
+            onDeleteClient={deleteClient}
+          />
+        </>
+      }
+    />
+        </Route>
+      </Routes>
     </>
   )
 }
