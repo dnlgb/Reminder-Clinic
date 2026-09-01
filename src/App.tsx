@@ -10,13 +10,15 @@ import DashboardSummary from "./DashboardSummary";
 import Callbacks from "./Callbacks";
 function App() {
 
-const [clients, setClients] = useState<({ name: string; phone: string }[])> ([])
-const addClient = (newClient: {name: string; phone : string}) => {
+const [clients, setClients] = useState<({ name: string; phone: string, email: string, source: string, treatmentStatus: string, notes: string }[])> ([])
+
+const addClient = (newClient: {name: string; phone: string, email: string, source: string, treatmentStatus: string, notes: string}) =>{
     setClients([...clients, newClient])}
-const deleteClient = (clientToDelete: {name: string, phone: string}) => {
+  
+const deleteClient = (clientToDelete: {name: string, phone: string, email : string, source: string, treatmentStatus: string, notes : string}) => {
   setClients(
     clients.filter(
-      (currentClient) => clientToDelete.phone != currentClient.phone
+      (currentClient) => clientToDelete.phone !== currentClient.phone
     )
   )
 }
