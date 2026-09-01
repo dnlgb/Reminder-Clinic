@@ -7,6 +7,7 @@ import { Route } from "react-router-dom";
 import ClientList from "./ClientList";
 import ClientForm from "./ClientForm";
 import DashboardSummary from "./DashboardSummary";
+import Callbacks from "./Callbacks";
 function App() {
 
 const [clients, setClients] = useState<({ name: string; phone: string }[])> ([])
@@ -37,7 +38,9 @@ const deleteClient = (clientToDelete: {name: string, phone: string}) => {
           />
         </>
       }
+      
     />
+        <Route path="/callbacks" element={<Callbacks />} />
         </Route>
       </Routes>
     </>
