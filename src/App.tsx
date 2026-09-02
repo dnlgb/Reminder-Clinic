@@ -21,7 +21,40 @@ const deleteClient = (clientToDelete: {name: string, phone: string, email : stri
       (currentClient) => clientToDelete.phone !== currentClient.phone
     )
   )
+
 }
+const [editingClient, setEditingClient] = useState<{
+  name: string
+  phone: string
+  email: string
+  source: string
+  treatmentStatus: string
+  notes: string
+} | null>(null)
+const startEditing = (client : {
+  name: string ,phone: string, email: string, source: string, treatmentStatus: string, notes: string}) => {
+      console.log(client)
+  setEditingClient(client)
+}
+
+const updateClient = (updatedClient: {
+  name: string
+  phone: string
+  email: string
+  source: string
+  treatmentStatus: string
+  notes: string}) => {
+  setClients(
+    clients.map((currentClient) => {
+      if (currentClient.phone === updatedClient.phone) {
+        return updatedClient
+      }
+
+      return currentClient
+    })
+  )
+}
+
 
   return (
     <>
@@ -33,10 +66,15 @@ const deleteClient = (clientToDelete: {name: string, phone: string, email : stri
           path="/clients"
           element={
           <>
-          <ClientForm onAddClient={addClient} />
+          <ClientForm onAddClient={addClient} 
+          editingClient={editingClient}
+          onUpdateClient={updateClient}/>
+          
           <ClientList
             clients={clients}
             onDeleteClient={deleteClient}
+            onEditClient={startEditing}
+            
           />
         </>
       }

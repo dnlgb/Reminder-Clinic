@@ -1,14 +1,47 @@
 import { useState } from "react"
-
+import { useEffect } from "react"
 function ClientForm(
-    {onAddClient}: {
-        onAddClient: (cliente: {name: string ,phone: string, email: string, source: string, treatmentStatus: string, notes: string}) => void}){
+    {onAddClient, editingClient, onUpdateClient}: {
+        onAddClient:
+        (cliente: {name: string ,phone: string, email: string, source: string, treatmentStatus: string, notes: string}) => void
+        editingClient: {
+    name: string
+    phone: string
+    email: string
+    source: string
+    treatmentStatus: string
+    notes: string
+    } | null
+    
+    onUpdateClient: (cliente: {
+    name: string
+    phone: string
+    email: string
+    source: string
+    treatmentStatus: string
+    notes: string
+    }) => void
+}
+    ){
     const [name, setName] = useState("");    
     const [phone, setPhone] = useState("");
     const [email, setEmail] = useState("");
     const [source, setSource] = useState("");
     const [treatmentStatus, setTreatmentStatus] = useState("");
     const [notes, setNotes] = useState("");
+
+    useEffect(() => {
+        console.log(editingClient)
+    if (editingClient) {
+    setName(editingClient.name)
+    setPhone(editingClient.phone)
+    setEmail(editingClient.email)
+    setSource(editingClient.source)
+    setTreatmentStatus(editingClient.treatmentStatus)
+    setNotes(editingClient.notes)
+    }
+}, [editingClient])
+    
     return(
         <>
         <label>Name:
@@ -42,27 +75,31 @@ function ClientForm(
         </label>
 
         <label>Notes:
-            <input type="text"
+            <textarea 
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}/>
         </label>
-        
-            <button type="button"
-            onClick={
-                () => {
-                    onAddClient(
-                        {
-                            name: name, phone: phone,
-                            email: email, source: source,
-                            treatmentStatus: treatmentStatus,
-                            notes: notes
+        <button
+        type="button"
+        onClick={() => {
+            const client = {
+        name,
+        phone,
+        email,
+        source,
+        treatmentStatus,
+        notes
+        }
 
-                        }
-                    )
-                }
-            }>
-            add client
-            </button>
+    if (editingClient) {
+        onUpdateClient(client)
+    } else {
+        onAddClient(client)
+    }
+    }}>
+        {editingClient ? "Save changes" : "Add client"}
+    </button>
+
         </>
     )
 } export default ClientForm
