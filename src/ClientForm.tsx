@@ -43,7 +43,8 @@ function ClientForm(
 }, [editingClient])
     
     return(
-        <>
+    
+    <form className="client-form">
         <label>Name:
             <input type="text"
                 value={name}
@@ -100,6 +101,6 @@ function ClientForm(
         {editingClient ? "Save changes" : "Add client"}
     </button>
 
-        </>
+    </form>
     )
 } export default ClientForm

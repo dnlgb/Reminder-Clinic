@@ -1,3 +1,4 @@
+import { useState } from "react";
 function ClientList({
     clients,
     onEditClient,
@@ -15,28 +16,49 @@ onEditClient: (client: {
     notes: string}) => void
 })
 {
+    const [search, setSearch] = useState("")
     return (
     <section>
         <h2>Clientes</h2>
-        <ul>
-            {clients.map((client) => (
-                <><li key={client.phone}>{`${client.name} - ${client.phone} ${client.email} ${client.source} ${client.treatmentStatus} ${client.notes}`}</li>
-                <button
+        <input
+        type="text"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        
+        />
+        
+    <ul>
+    {clients
+    .filter((currentClient) =>
+        currentClient.name
+        .toLowerCase()
+        .includes(search.toLowerCase())
+    )
+    .map((client) => (
+    <>
+    <li key={client.phone} className="client-item">
+            <div className="client-info">
+            {`${client.name} - ${client.phone} ${client.email} ${client.source} ${client.treatmentStatus} ${client.notes}`}
+            </div>
+        <div className="client-action">
+            <button
                 type="button"
                 onClick={() => onEditClient(client)}
-                >
-                    Edit
-                </button>            
-                <button
-                    type="button"
-                    onClick={() => onDeleteClient(client)}
-                >
-                    Delete
-                </button></>
-                
-                
-            ))}
-        </ul>
+            >
+                Edit
+            </button>
+
+            <button
+                type="button"
+                onClick={() => onDeleteClient(client)}
+            >
+                Delete
+            </button>
+        </div>
+    </li>
+    </>
+    ))}
+</ul>
     </section>
     )
 }
