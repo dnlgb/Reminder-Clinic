@@ -1,9 +1,20 @@
 import StatCard from "./StatCard"
-
-function DashboardSummary () {
+import type {Callback } from "../types"
+import PendingCallbacks from "./PendingCallbacks"
+function DashboardSummary({
+    callbacks,
+    handleComplete
+}: {
+    callbacks: Callback[]
+    handleComplete: (callback: Callback) => void
+}) {
     return(
     <>
         <section className="dashboard-summary">
+            <PendingCallbacks
+                callbacks={callbacks}
+                handleComplete={handleComplete}
+                />
             <StatCard title={"Pending"}
                 value={5}
                 label={"Callback"}/>

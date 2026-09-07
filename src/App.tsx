@@ -8,14 +8,16 @@ import ClientList from "./components/ClientList";
 import ClientForm from "./components/ClientForm";
 import DashboardSummary from "./components/DashboardSummary";
 import Callbacks from "./pages/Callbacks";
+import type { Client, Callback } from "./types"
 function App() {
 
-const [clients, setClients] = useState<({ name: string; phone: string, email: string, source: string, treatmentStatus: string, notes: string }[])> ([])
+//refactori
+const [clients, setClients] = useState<Client[]>([])
 
-const addClient = (newClient: {name: string; phone: string, email: string, source: string, treatmentStatus: string, notes: string}) =>{
+const addClient = (newClient: Client) =>{
     setClients([...clients, newClient])}
   
-const deleteClient = (clientToDelete: {name: string, phone: string, email : string, source: string, treatmentStatus: string, notes : string}) => {
+const deleteClient = (clientToDelete: Client) => {
   setClients(
     clients.filter(
       (currentClient) => clientToDelete.phone !== currentClient.phone
@@ -23,27 +25,13 @@ const deleteClient = (clientToDelete: {name: string, phone: string, email : stri
   )
 
 }
-const [editingClient, setEditingClient] = useState<{
-  name: string
-  phone: string
-  email: string
-  source: string
-  treatmentStatus: string
-  notes: string
-} | null>(null)
-const startEditing = (client : {
-  name: string ,phone: string, email: string, source: string, treatmentStatus: string, notes: string}) => {
-      console.log(client)
+const [editingClient, setEditingClient] = useState< Client| null>(null)
+const startEditing = (client : Client) => {
+    console.log(client)
   setEditingClient(client)
 }
 
-const updateClient = (updatedClient: {
-  name: string
-  phone: string
-  email: string
-  source: string
-  treatmentStatus: string
-  notes: string}) => {
+const updateClient = (updatedClient:Client) => {
   setClients(
     clients.map((currentClient) => {
       if (currentClient.phone === updatedClient.phone) {
@@ -71,13 +59,28 @@ const [callbacks, setCallbacks] = useState(
         }
     ])
 
+  const handleComplete = (callbackComplete: Callback) => {
+        setCallbacks(
+            callbacks.map((currentCallback) => {
+            if(currentCallback.id === callbackComplete.id) {
+                return {...currentCallback, status: "completed" }
+            }else{
+                return currentCallback
+            }
+            })
+        )
+    }
+
 
   return (
     <>
       <h1>Callback Clinic</h1>
       <Routes>
         <Route element={<MainLayout />}>
-        <Route path="/" element={<DashboardSummary/>}/>
+        <Route path="/" element={<DashboardSummary
+        callbacks={callbacks}
+        handleComplete={handleComplete}
+        />}/>
         <Route
           path="/clients"
           element={
@@ -96,7 +99,9 @@ const [callbacks, setCallbacks] = useState(
       }
       
     />
-        <Route path="/callbacks" element={<Callbacks />} />
+        <Route path="/callbacks" 
+        element={<Callbacks/>} 
+        />
         </Route>
       </Routes>
     </>

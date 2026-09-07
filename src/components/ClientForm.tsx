@@ -1,26 +1,13 @@
 import { useState } from "react"
 import { useEffect } from "react"
+import type { Client } from "../types"
 function ClientForm(
     {onAddClient, editingClient, onUpdateClient}: {
         onAddClient:
-        (cliente: {name: string ,phone: string, email: string, source: string, treatmentStatus: string, notes: string}) => void
-        editingClient: {
-    name: string
-    phone: string
-    email: string
-    source: string
-    treatmentStatus: string
-    notes: string
-    } | null
+        (cliente:Client ) => void
+        editingClient: Client| null
     
-    onUpdateClient: (cliente: {
-    name: string
-    phone: string
-    email: string
-    source: string
-    treatmentStatus: string
-    notes: string
-    }) => void
+    onUpdateClient: (cliente: Client) => void
 }
     ){
     const [name, setName] = useState("");    

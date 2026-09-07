@@ -1,32 +1,10 @@
-import { useState } from "react"
+import type {Callback } from "../types"
 
-function PendingCallbacks() {
-    const showCallback = (callback: {
-        id: number
-        patient: string
-        date: string
-        reason: string
-        }) => {
-            console.log(callback)
-        }
+function PendingCallbacks({callbacks ,handleComplete}: {
+    callbacks: Callback[]
+    handleComplete: (callback: Callback) => void
+}) {
 
-    const handleComplete = (callbackComplete: {
-        id: number
-        patient: string
-        date: string
-        reason: string
-        status: string
-    }) => {
-        setCallbacks(
-            callbacks.map((currentCallback) => {
-            if(currentCallback.id === callbackComplete.id) {
-                return {...currentCallback, status: "completed" }
-            }else{
-                return currentCallback
-            }
-            })
-        )
-    }
     return(
         <section>
             <h2>Pending</h2>
@@ -43,7 +21,7 @@ function PendingCallbacks() {
                     onClick={() => {
                         handleComplete(callback)
                     }}
-                    >Boton</button>
+                    >Boton11</button>
                 </div>
                 )}
             </div>    

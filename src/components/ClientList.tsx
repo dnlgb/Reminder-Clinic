@@ -1,19 +1,14 @@
 import { useState } from "react";
+import type { Client } from "../types"
 function ClientList({
     clients,
     onEditClient,
     onDeleteClient
         }: {
-        clients: { name: string; phone: string, email: string, source: string, treatmentStatus: string, notes: string}[]
+        clients: Client[]
 
-    onDeleteClient: (client: { name: string; phone: string, email: string, source: string, treatmentStatus: string, notes: string }) => void
-onEditClient: (client: {
-    name: string
-    phone: string
-    email: string
-    source: string
-    treatmentStatus: string
-    notes: string}) => void
+    onDeleteClient: (client: Client) => void
+onEditClient: (client: Client) => void
 })
 {
     const [search, setSearch] = useState("")
