@@ -1,8 +1,8 @@
-import Sidebar from "./Sidebar";
-import ClientList from "./ClientList";
-import ClientForm from "./ClientForm";
-import DashboardSummary from "./DashboardSummary";
-import PendingCallbacks from "./PendingCallbacks";
+import Sidebar from "../components/Sidebar";
+import ClientList from "../components/ClientList";
+import ClientForm from "../components/ClientForm";
+import DashboardSummary from "../components/DashboardSummary";
+import PendingCallbacks from "../components/PendingCallbacks";
 import { Outlet } from "react-router-dom";
 
 function MainLayout(

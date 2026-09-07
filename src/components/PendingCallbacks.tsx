@@ -1,21 +1,6 @@
 import { useState } from "react"
 
 function PendingCallbacks() {
-    const [callbacks, setCallbacks] = useState(
-        [
-        {
-            id: 1, patient: "dan", date: "2026-10-12 10:30", reason: "lorem ipsum xdxd",
-            status: "pending"
-        },
-        {
-            id: 2, patient: "juan", date: "2026-10-12 10:30", reason: "lorem ipsum xdxd",
-            status: "pending"
-        },
-        {
-            id: 3, patient: "meme", date: "2026-10-12 10:30", reason: "lorem ipsum xdxd",
-            status: "pending"
-        }
-    ])
     const showCallback = (callback: {
         id: number
         patient: string

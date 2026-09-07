@@ -1,13 +1,13 @@
 
 import { useState } from "react";
-import MainLayout from "./MainLayout";
+import MainLayout from "./layouts/MainLayout";
 import './App.css'
 import { Routes } from "react-router-dom";
 import { Route } from "react-router-dom";
-import ClientList from "./ClientList";
-import ClientForm from "./ClientForm";
-import DashboardSummary from "./DashboardSummary";
-import Callbacks from "./Callbacks";
+import ClientList from "./components/ClientList";
+import ClientForm from "./components/ClientForm";
+import DashboardSummary from "./components/DashboardSummary";
+import Callbacks from "./pages/Callbacks";
 function App() {
 
 const [clients, setClients] = useState<({ name: string; phone: string, email: string, source: string, treatmentStatus: string, notes: string }[])> ([])
@@ -54,6 +54,22 @@ const updateClient = (updatedClient: {
     })
   )
 }
+
+const [callbacks, setCallbacks] = useState(
+        [
+        {
+            id: 1, patient: "dan", date: "2026-10-12 10:30", reason: "lorem ipsum xdxd",
+            status: "pending"
+        },
+        {
+            id: 2, patient: "juan", date: "2026-10-12 10:30", reason: "lorem ipsum xdxd",
+            status: "pending"
+        },
+        {
+            id: 3, patient: "meme", date: "2026-10-12 10:30", reason: "lorem ipsum xdxd",
+            status: "pending"
+        }
+    ])
 
 
   return (
