@@ -1,5 +1,3 @@
-import type { Callback } from "../types"
-import type {Client} from "../types"
 
 export type Callback = {
     id: number

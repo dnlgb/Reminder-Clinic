@@ -8,7 +8,8 @@ import ClientList from "./components/ClientList";
 import ClientForm from "./components/ClientForm";
 import DashboardSummary from "./components/DashboardSummary";
 import Callbacks from "./pages/Callbacks";
-import type { Client, Callback } from "./types"
+import CallbacksForm from "./components/CallbacksForm";
+import type { Client, Callback, NewCallback } from "./types"
 function App() {
 
 //refactori
@@ -69,7 +70,15 @@ const [callbacks, setCallbacks] = useState(
             }
             })
         )
-    }
+  }
+  //recibe el callback, y se anade al final
+  const addCallback = (newCallback: NewCallback) => {
+  const callback: Callback = {
+    id: callbacks.length + 1,
+    ...newCallback
+  }
+  setCallbacks([...callbacks, callback])
+}
 
 
   return (
@@ -100,7 +109,14 @@ const [callbacks, setCallbacks] = useState(
       
     />
         <Route path="/callbacks" 
-        element={<Callbacks/>} 
+        element={
+        <>
+        <Callbacks/>
+        <CallbacksForm
+        onAddCallback={addCallback}
+          />
+        </>
+        } 
         />
         </Route>
       </Routes>
