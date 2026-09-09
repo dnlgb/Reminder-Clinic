@@ -1,25 +1,20 @@
 import { useState } from "react"
-import type { Callback, NewCallback } from "../types"
+import type { Client, NewCallback } from "../types"
 
 
 function CallbacksForm ({
 //me recibe un callbck pero no devuelve nada(void)
 //solo recibe callbacks
-    onAddCallback}: {
-        onAddCallback: (Callback: NewCallback) => void
+    onAddCallback, clients}: {
+        onAddCallback: (callback: NewCallback) => void
+        clients: Client[]
     }){
-    const [patient, setPatient] = useState("")
     const [date, setDate] = useState("")
     const [reason, setReason] = useState("")
     const [status, setStatus] = useState("pending")
+    const [selectedClient, setSelectedClient] = useState("")
 return(
-    <>
-    <label>
-        Patient:
-        <input type="text"
-        value={patient}
-        onChange={(e) => setPatient(e.target.value)}/>
-    </label>
+<div className="callback-form">
     <label>
         Date:
         <input type="text"
@@ -33,12 +28,25 @@ return(
         value={reason}
         onChange={(e) => setReason(e.target.value)} />
     </label>
+    <label>
+        Patient:
+        <select
+            value={selectedClient}
+            onChange={(e) => setSelectedClient(e.target.value)}
+        >
+            {clients.map((client) => (
+            <option key={client.phone} value={client.phone}>
+                {client.name}
+            </option>
+            ))}
+        </select>
+    </label>
     <button
     type="button"
     name="Boton"
     onClick={() =>
         {onAddCallback({
-            patient, date, reason, status
+            patient: selectedClient, date, reason, status
         })
         console.log(onAddCallback)
     }}
@@ -46,6 +54,6 @@ return(
     >
         Add callback
     </button>
-    </>
+</div>
     )
 }export default CallbacksForm

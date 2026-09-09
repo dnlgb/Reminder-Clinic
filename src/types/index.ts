@@ -14,3 +14,9 @@ export type Client = {
     treatmentStatus: string
     notes: string
 }
+export type NewCallback = {
+    patient: string
+    date: string
+    reason: string
+    status: string
+}

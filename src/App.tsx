@@ -71,6 +71,17 @@ const [callbacks, setCallbacks] = useState(
             })
         )
   }
+  const handleCancel = (callbackCancel: Callback) => {
+  setCallbacks(
+    callbacks.map((currentCallback) => {
+      if (currentCallback.id === callbackCancel.id) {
+        return { ...currentCallback, status: "cancelled" }
+      } else {
+        return currentCallback
+      }
+    })
+  )
+}
   //recibe el callback, y se anade al final
   const addCallback = (newCallback: NewCallback) => {
   const callback: Callback = {
@@ -111,9 +122,11 @@ const [callbacks, setCallbacks] = useState(
         <Route path="/callbacks" 
         element={
         <>
-        <Callbacks/>
+        <Callbacks callbacks = {callbacks}
+        handleCancel={handleCancel}/>
         <CallbacksForm
         onAddCallback={addCallback}
+        clients={clients}
           />
         </>
         } 
