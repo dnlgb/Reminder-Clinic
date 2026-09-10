@@ -2,6 +2,7 @@
 import { useState } from "react";
 import MainLayout from "./layouts/MainLayout";
 import './App.css'
+import { useEffect } from "react";
 import { Routes } from "react-router-dom";
 import { Route } from "react-router-dom";
 import ClientList from "./components/ClientList";
@@ -10,10 +11,29 @@ import DashboardSummary from "./components/DashboardSummary";
 import Callbacks from "./pages/Callbacks";
 import CallbacksForm from "./components/CallbacksForm";
 import type { Client, Callback, NewCallback } from "./types"
-function App() {
+import { supabase } from "./lib/supabase"
 
+function App() {
+console.log(supabase)
 //refactori
 const [clients, setClients] = useState<Client[]>([])
+//
+useEffect(() => {
+  const loadClients = async () => {
+    const { data, error } = await supabase
+      .from("clientes")
+      .select("*")
+
+    console.log("Clientes desde Supabase:", data)
+    console.log("Error:", error)
+
+    if (data) {
+      setClients(data)
+    }
+  }
+
+  loadClients()
+}, [])
 
 const addClient = (newClient: Client) =>{
     setClients([...clients, newClient])}
@@ -26,6 +46,7 @@ const deleteClient = (clientToDelete: Client) => {
   )
 
 }
+
 const [editingClient, setEditingClient] = useState< Client| null>(null)
 const startEditing = (client : Client) => {
     console.log(client)
