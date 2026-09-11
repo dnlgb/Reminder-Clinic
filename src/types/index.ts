@@ -7,13 +7,22 @@ export type Callback = {
     status: string
 }
 export type Client = {
+    id: string
     name: string
     phone: string
-    email: string
     source: string
-    treatmentStatus: string
-    notes: string
 }
+export type ClientWithApp = Client & {
+apps: {
+    name: string
+    }| null
+}
+export type NewClient = {
+    name: string
+    phone: string
+    source: string
+}
+
 export type NewCallback = {
     patient: string
     date: string

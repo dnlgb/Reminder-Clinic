@@ -10,11 +10,10 @@ import ClientForm from "./components/ClientForm";
 import DashboardSummary from "./components/DashboardSummary";
 import Callbacks from "./pages/Callbacks";
 import CallbacksForm from "./components/CallbacksForm";
-import type { Client, Callback, NewCallback } from "./types"
+import type { Client,ClientWithApp, Callback, NewCallback, NewClient } from "./types"
 import { supabase } from "./lib/supabase"
 
 function App() {
-console.log(supabase)
 //refactori
 const [clients, setClients] = useState<Client[]>([])
 //
@@ -22,11 +21,11 @@ useEffect(() => {
   const loadClients = async () => {
     const { data, error } = await supabase
       .from("clientes")
-      .select("*")
+      .select("*, apps(name)")
 
-    console.log("Clientes desde Supabase:", data)
-    console.log("Error:", error)
-
+    console.log("Clientes:", data)
+  console.log("Error clientes:", error)
+    
     if (data) {
       setClients(data)
     }
@@ -35,13 +34,39 @@ useEffect(() => {
   loadClients()
 }, [])
 
-const addClient = (newClient: Client) =>{
-    setClients([...clients, newClient])}
+//async porq esperamos que se comunique con SB
+const addClient = async (newClient: NewClient) =>{
+  console.log("Cliente que voy a insertar:", newClient)
+//insertamos newC en la tabla clientes
+//error: informacion del error
+const { data,error } = await supabase
+      .from("clientes")
+      .insert(newClient)
+      .select()//registro nuevo
+      .single()//como esperamos un solo registro, lo convierte en un objeto en vez de un array
+
+      if (error) {
+  console.log(error)
+  return
+  //return porq si insert falla no queremos continuar como si funcionara
+}
+
+setClients([...clients, data])
+}
   
-const deleteClient = (clientToDelete: Client) => {
+const deleteClient = async (clientToDelete: Client) => {
+  const { error } = await supabase
+      .from("clientes")
+      .delete()
+      .eq("id", clientToDelete.id)
+
+      if (error) {
+          console.log(error)
+          return
+      }
   setClients(
     clients.filter(
-      (currentClient) => clientToDelete.phone !== currentClient.phone
+      (currentClient) => clientToDelete.id !== currentClient.id
     )
   )
 
@@ -53,17 +78,29 @@ const startEditing = (client : Client) => {
   setEditingClient(client)
 }
 
-const updateClient = (updatedClient:Client) => {
-  setClients(
-    clients.map((currentClient) => {
-      if (currentClient.phone === updatedClient.phone) {
-        return updatedClient
-      }
+const updateClient = async (updatedClient:Client) => {
+    const { data,error } = await supabase
+    .from ("clientes")
+    .update(updatedClient)
+    .eq("id", updatedClient.id)
+    console.log("Update data:", data)
+console.log("Update error:", error)
 
-      return currentClient
+    if(error){
+      console.log(error)
+      return
+    }
+
+    setClients(
+      clients.map((currentClient) => {
+        if (currentClient.id === updatedClient.id) {
+          return updatedClient
+      }
+    return currentClient
     })
-  )
+  ) 
 }
+
 
 const [callbacks, setCallbacks] = useState(
         [

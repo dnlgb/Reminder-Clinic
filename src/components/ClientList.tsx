@@ -1,5 +1,7 @@
 import { useState } from "react";
-import type { Client } from "../types"
+import type { Client, ClientWithApp } from "../types"
+import { supabase } from "../lib/supabase";
+
 function ClientList({
     clients,
     onEditClient,
@@ -33,7 +35,7 @@ onEditClient: (client: Client) => void
     <>
     <li key={client.phone} className="client-item">
             <div className="client-info">
-            {`${client.name} - ${client.phone} ${client.email} ${client.source} ${client.treatmentStatus} ${client.notes}`}
+            {`${client.name} - ${client.phone} ${client.apps?.name}`}
             </div>
         <div className="client-action">
             <button

@@ -1,34 +1,48 @@
 import { useState } from "react"
 import { useEffect } from "react"
-import type { Client } from "../types"
+import type { Client, NewClient } from "../types"
+import { supabase } from "../lib/supabase"
 function ClientForm(
     {onAddClient, editingClient, onUpdateClient}: {
         onAddClient:
-        (cliente:Client ) => void
+        (cliente: NewClient ) => void
         editingClient: Client| null
-    
-    onUpdateClient: (cliente: Client) => void
+        onUpdateClient: (cliente: Client) => void
 }
     ){
     const [name, setName] = useState("");    
     const [phone, setPhone] = useState("");
-    const [email, setEmail] = useState("");
+    //crea un lugar en la memoria de React para guardar temporalmente la respuesta que venga de Sb.
+    const [apps, setApps] = useState<{ id: string; name: string }[]>([])
     const [source, setSource] = useState("");
-    const [treatmentStatus, setTreatmentStatus] = useState("");
-    const [notes, setNotes] = useState("");
+    
+    useEffect(() => {
+    //pedimos las apps que existen en sb
+        const loadApps = async () => {
+    //espera la respuesta de sb y sacamos los datos
+        const {data} = await supabase
+            .from("apps")
+            .select("*")
+            console.log("Apps:", data)
+        if (data) {
+        setApps(data)
+        }
+    }
+    loadApps()
+    //[] hace que se ejecute una sola vez al montar clientf
+    },[])
+
 
     useEffect(() => {
         console.log(editingClient)
     if (editingClient) {
     setName(editingClient.name)
     setPhone(editingClient.phone)
-    setEmail(editingClient.email)
     setSource(editingClient.source)
-    setTreatmentStatus(editingClient.treatmentStatus)
-    setNotes(editingClient.notes)
     }
 }, [editingClient])
     
+
     return(
     
     <form className="client-form">
@@ -44,43 +58,37 @@ function ClientForm(
                 onChange={(e) => setPhone(e.target.value)}/>
         </label>
 
-        <label>Email:
-            <input type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}/>
+
+        <label>App:
+        <select
+            value={source}
+            onChange={(e) =>{setSource(e.target.value)}}>
+                <option value="">-</option>
+            {apps.map((app) =>(
+            <option key={app.id} value={app.id}> 
+                {app.name}
+            </option>
+            ))}   
+        </select>
         </label>
 
-        <label>Source:
-            <input type="text"
-                value={source}
-                onChange={(e) => setSource(e.target.value)}/>
-        </label>
-
-        <label>Treatmen Status:
-            <input type="text"
-                value={treatmentStatus}
-                onChange={(e) => setTreatmentStatus(e.target.value)}/>
-        </label>
-
-        <label>Notes:
-            <textarea 
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}/>
-        </label>
         <button
         type="button"
         onClick={() => {
             const client = {
         name,
         phone,
-        email,
-        source,
-        treatmentStatus,
-        notes
+        source
         }
 
     if (editingClient) {
-        onUpdateClient(client)
+        const updatedClient = {
+            id: editingClient.id,
+            name,
+            phone,
+            source
+        }
+        onUpdateClient(updatedClient)
     } else {
         onAddClient(client)
     }
