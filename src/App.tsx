@@ -212,7 +212,6 @@ const addCallback = async (newCallback: NewCallback) => {
 
   return (
     <>
-      <h1>Callback Clinic</h1>
       <Routes>
         <Route element={<MainLayout />}>
 
