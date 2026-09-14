@@ -3,57 +3,63 @@ import type { Client, NewCallback } from "../types"
 
 
 function CallbacksForm ({
-//me recibe un callbck pero no devuelve nada(void)
-//solo recibe callbacks
-    onAddCallback, clients}: {
+//recibe un solo cliente porque el callback se crea desde ese cliente
+    onAddCallback, client}: {
         onAddCallback: (callback: NewCallback) => void
-        clients: Client[]
+        client: Client
     }){
-    const [date, setDate] = useState("")
-    const [reason, setReason] = useState("")
-    const [status, setStatus] = useState("pending")
-    const [selectedClient, setSelectedClient] = useState("")
+
+    //guarda la fecha y hora que el usuario selecciona
+    const [scheduledAt, setScheduledAt] = useState("")
+
+    //guarda la nota opcional del callback
+    const [notes, setNotes] = useState("")
+
 return(
 <div className="callback-form">
+
+    {/*muestra el cliente al que pertenece el callback*/}
+    <h3>Callback for {client.name}</h3>
+
     <label>
         Date:
-        <input type="text"
-        value={date}
+        <input
+        type="datetime-local"
+        value={scheduledAt}
         //obtenemos lo que el usuario escribe en tiempo real(onChange)
-        onChange={(e) => setDate(e.target.value)}/>
+        onChange={(e) => setScheduledAt(e.target.value)}
+        />
     </label>
+
     <label>
-        Reason:
-        <input type="text"
-        value={reason}
-        onChange={(e) => setReason(e.target.value)} />
+        Note:
+        <input
+        type="text"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        />
     </label>
-    <label>
-        Patient:
-        <select
-            value={selectedClient}
-            onChange={(e) => setSelectedClient(e.target.value)}
-        >
-            {clients.map((client) => (
-            <option key={client.phone} value={client.phone}>
-                {client.name}
-            </option>
-            ))}
-        </select>
-    </label>
+
     <button
     type="button"
     name="Boton"
     onClick={() =>
-        {onAddCallback({
-            patient: selectedClient, date, reason, status
-        })
-        console.log(onAddCallback)
-    }}
-    
+        {
+            //creamos el callback usando el id del cliente seleccionado
+            onAddCallback({
+                client_id: client.id,
+                scheduled_at: scheduledAt,
+                notes: notes || undefined
+            })
+
+            console.log(onAddCallback)
+        }
+    }
     >
-        Add callback
+        Save callback
     </button>
 </div>
     )
-}export default CallbacksForm
+}
+
+export default CallbacksForm

@@ -1,16 +1,17 @@
 import { useState } from "react";
-import type { Client, ClientWithApp } from "../types"
-import { supabase } from "../lib/supabase";
+import type { ClientWithApp } from "../types"
+
 
 function ClientList({
     clients,
     onEditClient,
-    onDeleteClient
+    onDeleteClient,
+    onCallbackClient
         }: {
-        clients: Client[]
-
-    onDeleteClient: (client: Client) => void
-onEditClient: (client: Client) => void
+        clients: ClientWithApp[]
+        onDeleteClient: (client: ClientWithApp) => void
+        onEditClient: (client: ClientWithApp) => void
+        onCallbackClient: (client: ClientWithApp) => void
 })
 {
     const [search, setSearch] = useState("")
@@ -32,8 +33,7 @@ onEditClient: (client: Client) => void
         .includes(search.toLowerCase())
     )
     .map((client) => (
-    <>
-    <li key={client.phone} className="client-item">
+    <li key={client.id} className="client-item">
             <div className="client-info">
             {`${client.name} - ${client.phone} ${client.apps?.name}`}
             </div>
@@ -51,9 +51,15 @@ onEditClient: (client: Client) => void
             >
                 Delete
             </button>
+
+            <button
+                type="button"
+                onClick={() => onCallbackClient(client)}
+            >
+                Callback
+            </button>
         </div>
     </li>
-    </>
     ))}
 </ul>
     </section>

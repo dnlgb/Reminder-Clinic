@@ -1,22 +1,41 @@
+export type CallbackStatus =
+    | "pending"
+    | "completed"
+    | "cancelled"
+
+export type CallResult =
+    | "accepted"
+    | "rescheduled"
+    | "declined"
 
 export type Callback = {
-    id: number
-    patient: string
-    date: string
-    reason: string
-    status: string
+    id: string
+    client_id: string
+    scheduled_at: string
+    status: CallbackStatus
+    notes: string | null
+    call_result: CallResult | null
+    next_reminder_at: string | null
+    created_at: string
 }
+
 export type Client = {
     id: string
     name: string
     phone: string
     source: string
+    active: boolean
 }
-export type ClientWithApp = Client & {
-apps: {
+
+export type App = {
+    id: string
     name: string
-    }| null
 }
+
+export type ClientWithApp = Client & {
+    apps: App | null
+}
+
 export type NewClient = {
     name: string
     phone: string
@@ -24,8 +43,7 @@ export type NewClient = {
 }
 
 export type NewCallback = {
-    patient: string
-    date: string
-    reason: string
-    status: string
+    client_id: string
+    scheduled_at: string
+    notes?: string
 }

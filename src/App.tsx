@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import MainLayout from "./layouts/MainLayout";
-import './App.css'
+import "./App.css";
 import { useEffect } from "react";
 import { Routes } from "react-router-dom";
 import { Route } from "react-router-dom";
@@ -10,24 +9,34 @@ import ClientForm from "./components/ClientForm";
 import DashboardSummary from "./components/DashboardSummary";
 import Callbacks from "./pages/Callbacks";
 import CallbacksForm from "./components/CallbacksForm";
-import type { Client,ClientWithApp, Callback, NewCallback, NewClient } from "./types"
-import { supabase } from "./lib/supabase"
+import type {
+  Client,
+  Callback,
+  NewCallback,
+  NewClient,
+  ClientWithApp
+} from "./types";
+import { supabase } from "./lib/supabase";
 
 function App() {
 //refactori
-const [clients, setClients] = useState<Client[]>([])
+const [clients, setClients] = useState<ClientWithApp[]>([])
 //
 useEffect(() => {
   const loadClients = async () => {
     const { data, error } = await supabase
       .from("clientes")
-      .select("*, apps(name)")
+      .select("*, apps(id, name)")
+      .eq("active", true) //filtra los clientes activos
 
-    console.log("Clientes:", data)
-  console.log("Error clientes:", error)
-    
+    if (error) {
+      console.log(error)
+      return
+    }
+
+    const clientsWithApps = data as ClientWithApp[]
     if (data) {
-      setClients(data)
+      setClients(clientsWithApps)
     }
   }
 
@@ -37,6 +46,7 @@ useEffect(() => {
 //async porq esperamos que se comunique con SB
 const addClient = async (newClient: NewClient) =>{
   console.log("Cliente que voy a insertar:", newClient)
+
 //insertamos newC en la tabla clientes
 //error: informacion del error
 const { data,error } = await supabase
@@ -51,40 +61,58 @@ const { data,error } = await supabase
   //return porq si insert falla no queremos continuar como si funcionara
 }
 
-setClients([...clients, data])
+setClients([
+  ...clients,
+  {
+    ...data,
+    apps: null
+  }
+])
 }
-  
+
+//soft delete: desactiva el cliente en vez de eliminarlo
 const deleteClient = async (clientToDelete: Client) => {
   const { error } = await supabase
       .from("clientes")
-      .delete()
+      .update({ active: false })
       .eq("id", clientToDelete.id)
 
       if (error) {
           console.log(error)
           return
       }
+
   setClients(
     clients.filter(
       (currentClient) => clientToDelete.id !== currentClient.id
     )
   )
-
 }
 
-const [editingClient, setEditingClient] = useState< Client| null>(null)
-const startEditing = (client : Client) => {
+const [editingClient, setEditingClient] = useState<Client | null>(null)
+
+const startEditing = (client: Client) => {
     console.log(client)
   setEditingClient(client)
 }
 
-const updateClient = async (updatedClient:Client) => {
+//cliente al que le vamos a crear un callback
+const [callbackClient, setCallbackClient] = useState<Client | null>(null)
+
+const startCallback = (client: Client) => {
+  setCallbackClient(client)
+}
+
+const updateClient = async (updatedClient: Client) => {
     const { data,error } = await supabase
     .from ("clientes")
     .update(updatedClient)
     .eq("id", updatedClient.id)
+    .select()
+    .single()
+
     console.log("Update data:", data)
-console.log("Update error:", error)
+    console.log("Update error:", error)
 
     if(error){
       console.log(error)
@@ -94,59 +122,91 @@ console.log("Update error:", error)
     setClients(
       clients.map((currentClient) => {
         if (currentClient.id === updatedClient.id) {
-          return updatedClient
-      }
-    return currentClient
-    })
-  ) 
+          return {
+            ...updatedClient,
+            apps: currentClient.apps
+          }
+        }
+
+        return currentClient
+      })
+    )
 }
 
 
-const [callbacks, setCallbacks] = useState(
-        [
-        {
-            id: 1, patient: "dan", date: "2026-10-12 10:30", reason: "lorem ipsum xdxd",
-            status: "pending"
-        },
-        {
-            id: 2, patient: "juan", date: "2026-10-12 10:30", reason: "lorem ipsum xdxd",
-            status: "pending"
-        },
-        {
-            id: 3, patient: "meme", date: "2026-10-12 10:30", reason: "lorem ipsum xdxd",
-            status: "pending"
-        }
-    ])
+//callbacks ahora vienen desde Supabase
+const [callbacks, setCallbacks] = useState<Callback[]>([])
 
-  const handleComplete = (callbackComplete: Callback) => {
-        setCallbacks(
-            callbacks.map((currentCallback) => {
-            if(currentCallback.id === callbackComplete.id) {
-                return {...currentCallback, status: "completed" }
-            }else{
-                return currentCallback
-            }
-            })
-        )
+useEffect(() => {
+  const loadCallbacks = async () => {
+    const { data, error } = await supabase
+      .from("callbacks")
+      .select("*")
+      .order("scheduled_at", { ascending: true })
+
+    if (error) {
+      console.log(error)
+      return
+    }
+
+    setCallbacks(data as Callback[])
   }
-  const handleCancel = (callbackCancel: Callback) => {
+
+  loadCallbacks()
+}, [])
+
+//actualiza el estado del callback en Supabase
+const handleCancel = async (callbackCancel: Callback) => {
+  const { error } = await supabase
+    .from("callbacks")
+    .update({
+      status: "cancelled",
+      call_result: null
+    })
+    .eq("id", callbackCancel.id)
+
+  if (error) {
+    console.log(error)
+    return
+  }
+
   setCallbacks(
     callbacks.map((currentCallback) => {
       if (currentCallback.id === callbackCancel.id) {
-        return { ...currentCallback, status: "cancelled" }
-      } else {
-        return currentCallback
+        return {
+          ...currentCallback,
+          status: "cancelled",
+          call_result: null
+        }
       }
+
+      return currentCallback
     })
   )
 }
-  //recibe el callback, y se anade al final
-  const addCallback = (newCallback: NewCallback) => {
-  const callback: Callback = {
-    id: callbacks.length + 1,
-    ...newCallback
+
+//recibe el callback, y se anade al final
+const addCallback = async (newCallback: NewCallback) => {
+  const { data, error } = await supabase
+    .from("callbacks")
+    .insert({
+      ...newCallback,
+      status: "pending",
+      call_result: null,
+      next_reminder_at: null
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.log(error)
+    return
   }
-  setCallbacks([...callbacks, callback])
+
+  setCallbacks([
+    ...callbacks,
+    data as Callback
+  ])
 }
 
 
@@ -155,46 +215,61 @@ const [callbacks, setCallbacks] = useState(
       <h1>Callback Clinic</h1>
       <Routes>
         <Route element={<MainLayout />}>
-        <Route path="/" element={<DashboardSummary
-        callbacks={callbacks}
-        handleComplete={handleComplete}
-        />}/>
+
+        <Route
+          path="/"
+          element={
+            <DashboardSummary
+              callbacks={callbacks}
+            />
+          }
+        />
+
         <Route
           path="/clients"
           element={
           <>
-          <ClientForm onAddClient={addClient} 
-          editingClient={editingClient}
-          onUpdateClient={updateClient}/>
-          
-          <ClientList
-            clients={clients}
-            onDeleteClient={deleteClient}
-            onEditClient={startEditing}
-            
-          />
-        </>
-      }
-      
-    />
-        <Route path="/callbacks" 
-        element={
-        <>
-        <Callbacks callbacks = {callbacks}
-        handleCancel={handleCancel}/>
-        <CallbacksForm
-        onAddCallback={addCallback}
-        clients={clients}
-          />
-        </>
-        } 
+            <ClientForm
+              onAddClient={addClient}
+              editingClient={editingClient}
+              onUpdateClient={updateClient}
+            />
+
+            <ClientList
+              clients={clients}
+              onDeleteClient={deleteClient}
+              onEditClient={startEditing}
+              onCallbackClient={startCallback}
+            />
+
+            //si hay un cliente seleccionado para callback, mostramos el formulario
+            {callbackClient && (
+              <CallbacksForm
+                client={callbackClient}
+                onAddCallback={addCallback}
+              />
+            )}
+          </>
+          }
         />
+
+        <Route
+          path="/callbacks"
+          element={
+          <>
+            <Callbacks
+              callbacks={callbacks}
+              handleCancel={handleCancel}
+            />
+          </>
+          }
+        />
+
         </Route>
       </Routes>
     </>
   )
 }
-
 
 
 export default App

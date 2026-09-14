@@ -1,25 +1,31 @@
-import type { Callback } from "../types"; 
-function Callbacks({callbacks, handleCancel}: {
+import type { Callback } from "../types";
+
+function Callbacks({
+    callbacks,
+    handleCancel
+}: {
     callbacks: Callback[]
     handleCancel: (callback: Callback) => void
 }) {
     return(
         <>
         <ul className="callback-list">
-            {callbacks.filter((callback) => callback.status === "pending")
+            {callbacks
+            .filter((callback) => callback.status === "pending")
             .map((callback) => (
                 <li className="callback-item" key={callback.id}>
-                    <span>{callback.patient}</span>
-                    <span>{callback.date}</span>
-                    <span>{callback.reason}</span>
+                    <span>{callback.client_id}</span>
+                    <span>{callback.scheduled_at}</span>
+                    <span>{callback.notes}</span>
+
                     <button onClick={() => handleCancel(callback)}>
                         Cancelar
-                        </button>
-                        
+                    </button>
                 </li>
-                
             ))}
         </ul>
         </>
     )
-} export default Callbacks;
+}
+
+export default Callbacks;
