@@ -14,7 +14,8 @@ import type {
   Callback,
   NewCallback,
   NewClient,
-  ClientWithApp
+  ClientWithApp,
+  CallbackWithClient
 } from "./types";
 import { supabase } from "./lib/supabase";
 
@@ -135,13 +136,18 @@ const updateClient = async (updatedClient: Client) => {
 
 
 //callbacks ahora vienen desde Supabase
-const [callbacks, setCallbacks] = useState<Callback[]>([])
+const [callbacks, setCallbacks] = useState<CallbackWithClient[]>([])
 
 useEffect(() => {
   const loadCallbacks = async () => {
     const { data, error } = await supabase
       .from("callbacks")
-      .select("*")
+      .select(`*,
+        clientes (
+      id,
+      name,
+      phone
+    )`)
       .order("scheduled_at", { ascending: true })
 
     if (error) {
@@ -149,7 +155,8 @@ useEffect(() => {
       return
     }
 
-    setCallbacks(data as Callback[])
+    setCallbacks(data as CallbackWithClient[])
+    console.log("Callbacks:", data)
   }
 
   loadCallbacks()
@@ -205,7 +212,7 @@ const addCallback = async (newCallback: NewCallback) => {
 
   setCallbacks([
     ...callbacks,
-    data as Callback
+    data as CallbackWithClient
   ])
 }
 

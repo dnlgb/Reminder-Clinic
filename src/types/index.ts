@@ -18,6 +18,13 @@ export type Callback = {
     next_reminder_at: string | null
     created_at: string
 }
+export type CallbackWithClient = Callback & {
+clientes: {
+    id: string
+    name: string
+    phone: string
+} | null
+}
 
 export type Client = {
     id: string

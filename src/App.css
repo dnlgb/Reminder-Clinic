@@ -1,66 +1,71 @@
-*{
+* {
   box-sizing: border-box;
-  
 }
 
-.layout{
+.layout {
   display: flex;
 }
 
-.sidebar{
+.sidebar {
   width: 250px;
-  height: 90vh; 
+  height: 90vh;
   box-sizing: border-box;
   padding: 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
-.sidebar h2{
+
+.sidebar h2 {
   font-size: 24px;
   margin-bottom: 16px;
 }
-.sidebar a{
+
+.sidebar a {
   text-decoration: none;
   text-align: left;
   color: #fff;
-  padding: 10px;
-  font-size: 16px;
   padding: 8px 12px;
+  font-size: 16px;
   border-radius: 6px;
 }
-.sidebar a:hover{
+
+.sidebar a:hover {
   color: #3a3636;
   background: #e0e0e0;
   transition: background 1s;
-  
 }
 
-.sidebar-nav{
+.sidebar-nav {
   display: flex;
-  flex-direction:  column;
+  flex-direction: column;
   align-items: flex-start;
   gap: 24px;
 }
 
-.sidebar-user{
+.sidebar-user {
   display: block;
   border-top: 1px solid;
   padding-top: 10px;
 }
-.main-content{
+
+.main-content {
   flex: 1;
+  height: 100vh;
   padding: 40px;
   display: flex;
   flex-direction: column;
   gap: 24px;
+  background: #f7f7f4;
 }
-.dashboard-summary{
+
+.dashboard-summary {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 16px;
 }
-.stat-card{
+
+.stat-card {
   background: #ffffff;
   border-radius: 8px;
   padding: 20px;
@@ -71,27 +76,31 @@
   border: 1px solid #e5e7eb;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
+
 .stat-card span,
-.stat-card strong{
+.stat-card strong {
   display: block;
 }
-.stat-card span{
+
+.stat-card span {
   margin-bottom: 10px;
   font-size: 14px;
   color: #787d87;
 }
-.stat-card strong{
+
+.stat-card strong {
   font-size: 28px;
   font-weight: 900;
   color: #343232;
 }
 
-.callback-list{
+.callback-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-.callback-dataR{
+
+.callback-dataR {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -102,7 +111,7 @@
 }
 
 /*vista cliente*/
-.client-item{
+.client-item {
   margin-top: 10px;
   padding: 12px;
   display: flex;
@@ -111,18 +120,17 @@
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
-  padding: 12px;
-
 }
 
 .client-action {
   display: flex;
   gap: 10px;
 }
+
 .client-form {
   display: flex;
   flex-direction: column;
-  gap: 12px
+  gap: 12px;
 }
 
 input,
@@ -130,12 +138,14 @@ textarea {
   width: 100%;
   padding: 8px;
 }
+
 .client-form button {
   padding: 10px 16px;
   border-radius: 6px;
   border: none;
   font-size: 14px;
 }
+
 .callbacks-list {
   list-style: none;
   padding: 0;
@@ -150,42 +160,48 @@ textarea {
   border: 1px solid #ddd;
   border-radius: 8px;
 }
+
 .callback-form {
   display: flex;
   flex-direction: column;
   gap: 12px;
   max-width: 400px;
 }
+
 /* Home */
 
 .dashboard-header {
-  margin-bottom: 40px;
+  margin-bottom: 32px;
 }
 
 .dashboard-header h2 {
   margin: 0 0 8px;
-  font-size: 32px;
+  font-size: 30px;
+  font-weight: 600;
+  color: #1B2F5B;
 }
 
 .dashboard-header p {
   margin: 0;
   color: #6b7280;
-  font-size: 16px;
+  font-size: 15px;
+}
+
+.dashboard-main {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
 }
 
 .today-callbacks {
-  margin-bottom: 32px;
-  padding: 28px;
+  margin-bottom: 0;
+  padding: 24px 28px;
+  background: #fdfdff;
   border: 1px solid #e8e8e5;
   border-radius: 20px;
   box-shadow: 0 20px 16px rgba(27, 47, 91, 0.06);
-  background: #fdfdff;
 }
 
-.daily-workflow h2,
-.today-overview h2 {
-  margin-top: 0;
-}
 .today-callbacks h2 {
   margin: 0;
   font-size: 20px;
@@ -197,12 +213,13 @@ textarea {
   margin-top: 28px;
   position: relative;
 }
+
 .callback-timeline::before {
   content: "";
   position: absolute;
   top: 5px;
   bottom: 5px;
-  left: 88px;
+  left: 90px;
   width: 1px;
   background: #dfe3ea;
 }
@@ -212,8 +229,9 @@ textarea {
   grid-template-columns: 80px 20px 1fr;
   gap: 16px;
   align-items: center;
-  min-height: 80px;
+  min-height: 88px;
 }
+
 .timeline-item > span {
   font-size: 13px;
   font-weight: 600;
@@ -235,33 +253,138 @@ textarea {
   flex-direction: column;
   gap: 4px;
 }
+
 .timeline-content strong {
   font-size: 16px;
   font-weight: 600;
   color: #1B2F5B;
 }
 
-.timeline-content span {
-  color: #6b7280;
-  font-size: 14px;
+.callback-status {
+  width: fit-content;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #eef1f6;
+  color: #2F4E8A;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
 }
 
-.dashboard-main {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 24px;
-}
 .dashboard-side {
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
+/* Workflow */
+
 .daily-workflow,
 .today-overview {
-  min-height: 180px;
   padding: 28px;
   background: #ffffff;
   border: 1px solid #e5e7eb;
   border-radius: 20px;
+}
+
+.daily-workflow h2,
+.today-overview h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1B2F5B;
+}
+
+.daily-workflow > span {
+  display: block;
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.workflow-result {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.workflow-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid #eef0f3;
+}
+
+.workflow-row:last-child {
+  border-bottom: none;
+}
+
+.workflow-label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.workflow-label strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1B2F5B;
+}
+
+.workflow-count {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1B2F5B;
+}
+
+.workflow-dots {
+  display: flex;
+  gap: 7px;
+}
+
+.accepted-dot,
+.rescheduled-dot,
+.declined-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.accepted-dot {
+  background: #2F9E83;
+}
+
+.rescheduled-dot {
+  background: #4A8FE7;
+}
+
+.declined-dot {
+  background: #F28B8B;
+}
+
+/* Today's overview */
+
+.overview-stats {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin-top: 24px;
+}
+
+.overview-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.overview-stats strong {
+  font-size: 28px;
+  font-weight: 600;
+  color: #1B2F5B;
+}
+
+.overview-stats span {
+  font-size: 12px;
+  color: #6b7280;
 }
