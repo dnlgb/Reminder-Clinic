@@ -142,12 +142,19 @@ useEffect(() => {
   const loadCallbacks = async () => {
     const { data, error } = await supabase
       .from("callbacks")
+      //sb devuelve=>:
       .select(`*,
         clientes (
       id,
       name,
-      phone
-    )`)
+      phone,
+      source,
+      apps (
+      id,
+      name
+      )
+    )`
+  )
       .order("scheduled_at", { ascending: true })
 
     if (error) {

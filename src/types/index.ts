@@ -23,6 +23,11 @@ clientes: {
     id: string
     name: string
     phone: string
+    source: string | null
+    apps: {
+    id: string
+    name: string
+    } | null
 } | null
 }
 
