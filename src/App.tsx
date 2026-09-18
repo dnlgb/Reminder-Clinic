@@ -237,27 +237,33 @@ const handleCompleteCallback = async (
 
 //recibe el callback, y se anade al final
 const addCallback = async (newCallback: NewCallback) => {
+
+  const scheduledAt = new Date(
+    newCallback.scheduled_at
+  ).toISOString();
+
   const { data, error } = await supabase
     .from("callbacks")
     .insert({
       ...newCallback,
+      scheduled_at: scheduledAt,
       status: "pending",
       call_result: null,
       next_reminder_at: null
     })
     .select()
-    .single()
+    .single();
 
   if (error) {
-    console.log(error)
-    return
+    console.log(error);
+    return;
   }
 
   setCallbacks([
     ...callbacks,
     data as CallbackWithClient
-  ])
-}
+  ]);
+};
 
 
   return (

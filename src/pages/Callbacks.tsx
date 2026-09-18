@@ -3,62 +3,172 @@ import type { CallbackWithClient } from "../types";
 import "./Callbacks.css";
 
 function Callbacks({
-    callbacks,
-    handleCancel,
-    handleCompleteCallback
+  callbacks,
+  handleCancel,
+  handleCompleteCallback
 }: {
-    callbacks: CallbackWithClient[];
-    handleCancel: (callback: CallbackWithClient) => void;
-    handleCompleteCallback: (
-        callback: CallbackWithClient, 
-        callResult: "accepted" | "declined"
-    )=> void;
+  callbacks: CallbackWithClient[];
+  handleCancel: (callback: CallbackWithClient) => void;
+  handleCompleteCallback: (
+    callback: CallbackWithClient,
+    callResult: "accepted" | "declined"
+  ) => void;
 }) {
 
-    const [search, setSearch] = useState("");
-    const [statusFilter, setStatusFilter] = useState("all");
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
 
-const [selectedCallback, setSelectedCallback] = 
-    useState<CallbackWithClient |null>(null);
+  const [selectedCallback, setSelectedCallback] =
+    useState<CallbackWithClient | null>(null);
 
-    const filteredCallbacks = callbacks.filter((callback) => {
 
+  // HELPERS
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .slice(0, 2)
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase();
+  };
+
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString("es-CO", {
+      day: "2-digit",
+      month: "short"
+    });
+  };
+
+  const formatTime = (date: string) => {
+    return new Date(date).toLocaleTimeString("es-CO", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  };
+
+  const getDateKey = (date: Date) => {
+    return [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0")
+    ].join("-");
+  };
+
+  const getGroupDate = (dateString: string) => {
+    const date = new Date(dateString);
+
+    const today = new Date();
+
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+
+    const dateKey = getDateKey(date);
+    const todayKey = getDateKey(today);
+    const tomorrowKey = getDateKey(tomorrow);
+
+    if (dateKey === todayKey) {
+      return {
+        title: "Today",
+        subtitle: date.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric"
+        })
+      };
+    }
+
+    if (dateKey === tomorrowKey) {
+      return {
+        title: "Tomorrow",
+        subtitle: date.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric"
+        })
+      };
+    }
+
+    return {
+      title: date.toLocaleDateString("en-US", {
+        weekday: "long"
+      }),
+      subtitle: date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric"
+      })
+    };
+  };
+
+
+  // FILTER
+
+  const filteredCallbacks = callbacks.filter((callback) => {
     const clientName = callback.clientes?.name ?? "";
     const clientPhone = callback.clientes?.phone ?? "";
 
     const matchesSearch =
-        clientName.toLowerCase().includes(search.toLowerCase()) ||
-        clientPhone.includes(search);
+      clientName.toLowerCase().includes(search.toLowerCase()) ||
+      clientPhone.includes(search);
 
     const matchesStatus =
-        statusFilter === "all" ||
-        callback.status === statusFilter;
+      statusFilter === "all" ||
+      callback.status === statusFilter;
 
     return matchesSearch && matchesStatus;
-});
+  });
 
-const getInitials = (name: string) => {
-    return name
-        .split(" ")
-        .slice(0, 2)
-        .map((word) => word[0])
-        .join("")
-        .toUpperCase();
-};
 
-const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("es-CO", {
-        day: "2-digit",
-        month: "short"
-    });
-};
+  // GROUP BY DAY
 
-const formatTime = (date: string) => {
-    return new Date(date).toLocaleTimeString("es-CO", {
-    hour: "2-digit",
-    minute: "2-digit"
-    });
-};
+const groupedCallbacks = filteredCallbacks.reduce<
+    Record<string, CallbackWithClient[]>
+    >((groups, callback) => {
+
+    const dateKey = getDateKey(
+        new Date(callback.scheduled_at)
+    );
+
+    if (!groups[dateKey]) {
+        groups[dateKey] = [];
+    }
+
+    groups[dateKey].push(callback);
+
+    return groups;
+
+}, {});
+
+const callbackGroups = Object.entries(groupedCallbacks).sort(
+    ([dateA], [dateB]) => {
+    const todayKey = getDateKey(new Date());
+
+    const dateAIsToday = dateA === todayKey;
+    const dateBIsToday = dateB === todayKey;
+
+    if (dateAIsToday) return -1;
+    if (dateBIsToday) return 1;
+
+    const now = new Date();
+    const dateAObj = new Date(`${dateA}T00:00:00`);
+    const dateBObj = new Date(`${dateB}T00:00:00`);
+    const todayObj = new Date(`${todayKey}T00:00:00`);
+
+    const dateAIsFuture = dateAObj > todayObj;
+    const dateBIsFuture = dateBObj > todayObj;
+
+    if (dateAIsFuture && dateBIsFuture) {
+        return dateA.localeCompare(dateB);
+    }
+
+    if (!dateAIsFuture && !dateBIsFuture) {
+        return dateB.localeCompare(dateA);
+    }
+
+    return dateAIsFuture ? -1 : 1;
+    
+}
+);
+
+
 
 return (
     <section className="callbacks-page">
@@ -108,99 +218,99 @@ return (
             <span></span>
         </div>
 
-        {filteredCallbacks.length === 0 ? (
+    {filteredCallbacks.length === 0 ? (
+        <div className="callback-empty">
+            No callbacks found.
+        </div>
+) : (
+    callbackGroups.map(([dateKey, dayCallbacks]) => {
+        const groupDate = getGroupDate(dayCallbacks[0].scheduled_at);
+        const sortedDayCallbacks = [...dayCallbacks].sort((a, b) => {
+    const now = new Date();
+    const dateA = new Date(a.scheduled_at);
+    const dateB = new Date(b.scheduled_at);
 
-            <div className="callback-empty">
-                No callbacks found.
+    const todayKey = getDateKey(now);
+    const dateAKey = getDateKey(dateA);
+    const dateBKey = getDateKey(dateB);
+
+        if (dateAKey === todayKey && dateBKey === todayKey) {
+    const aPassed = dateA < now;
+    const bPassed = dateB < now;
+
+        if (aPassed && !bPassed) return 1;
+        if (!aPassed && bPassed) return -1;
+    }
+
+    return dateA.getTime() - dateB.getTime();
+});
+
+
+    return (
+        <div className="callback-date-group" key={dateKey}>
+            <div className="callback-date-header">
+                <div className="callback-date-title">
+                    <strong>{groupDate.title}</strong>
+                    <span>{groupDate.subtitle}</span>
+                </div>
+
+                <span className="callback-date-count">
+                    {dayCallbacks.length}{" "}
+                    {dayCallbacks.length === 1 ? "callback" : "callbacks"}
+                </span>
             </div>
 
-        ) : (
-        
-        filteredCallbacks.map((callback) => {
 
-            const client = callback.clientes;
-//devuelve los callbacksclientes
-return (
+    {sortedDayCallbacks.map((callback) => {
+        const client = callback.clientes;
+    return (
         <div
             className="callback-row"
             key={callback.id}
-            onClick={() =>setSelectedCallback(callback)}
-
-            >
-
-                {/* CLIENT */}
-                <div className="callback-client">
-
+            onClick={() => setSelectedCallback(callback)}>
+            <div className="callback-client">
                 <div className="callback-client-avatar">
-                    {client
-                    ? getInitials(client.name)
-                    : "?"}
+                    {getInitials(client?.name ?? "—")}
                 </div>
 
                 <div className="callback-client-info">
-
-                    <strong>
-                        {client?.name ?? "Unknown client"}
-                    </strong>
-
-                    <span>
-                        {client?.phone ?? "No phone"}
-                    </span>
-
+                    <strong>{client?.name ?? "—"}</strong>
+                    <span>{client?.phone ?? "—"}</span>
                 </div>
-
-                </div>
-
-                {/* SCHEDULED */}
-                <div className="callback-scheduled">
-
-                <strong>
-                    {formatDate(callback.scheduled_at)}
-                </strong>
-
-                <span>
-                    {formatTime(callback.scheduled_at)}
-                </span>
-
-                </div>
-
-                {/* SOURCE */}
-                <div className="callback-source">
-
-                <span className="callback-source-dot"></span>
-
-                    <span>
-                        {client?.apps?.name ?? "—"}
-                    </span>
-
-                </div>
-
-                {/* STATUS */}
-                <span className="callback-status">
-                    {callback.status}
-                </span>
-
-                {/* ACTION */}
-                <div className="callback-actions">
-
-                <button
-                className="callback-menu-button"
-                onClick={(e) => {
-                e.stopPropagation();
-                setSelectedCallback(callback);
-                }}
-                title="Open callback"
-                >
-                ⋯
-                </button>
-
-                </div>
-
             </div>
-            );
-        })
 
-        )}
+            <div className="callback-scheduled">
+                <strong>{formatTime(callback.scheduled_at)}</strong>
+                <span>{formatDate(callback.scheduled_at)}</span>
+            </div>
+
+            <div className="callback-source">
+                <span className="callback-source-dot"></span>
+                {client?.apps?.name ?? "—"}
+            </div>
+
+            <span className="callback-status">
+                {callback.status}
+            </span>
+
+            <div className="callback-actions">
+                <button
+                    className="callback-menu-button"
+                    onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedCallback(callback);
+                }}
+                    title="Open callback"
+                >
+                    ⋯
+                </button>
+            </div>
+        </div>
+        );
+    })}
+        </div>//cbdategroup
+    );})
+)}
 
     </div>
         {selectedCallback && (
