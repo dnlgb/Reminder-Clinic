@@ -4,10 +4,15 @@ import "./Callbacks.css";
 
 function Callbacks({
     callbacks,
-    handleCancel
+    handleCancel,
+    handleCompleteCallback
 }: {
     callbacks: CallbackWithClient[];
     handleCancel: (callback: CallbackWithClient) => void;
+    handleCompleteCallback: (
+        callback: CallbackWithClient, 
+        callResult: "accepted" | "declined"
+    )=> void;
 }) {
 
     const [search, setSearch] = useState("");
@@ -110,11 +115,11 @@ return (
             </div>
 
         ) : (
-
+        
         filteredCallbacks.map((callback) => {
 
             const client = callback.clientes;
-
+//devuelve los callbacksclientes
 return (
         <div
             className="callback-row"
@@ -238,7 +243,13 @@ return (
 
     <div className="callback-outcomes">
 
-        <button>
+        <button
+        onClick={() =>{
+            if(!selectedCallback) return;
+            
+            handleCompleteCallback(selectedCallback, "accepted")
+            console.log(selectedCallback)
+            }}>
             Accepted
         </button>
 
@@ -250,7 +261,10 @@ return (
             Snooze
         </button>
 
-        <button>
+        <button
+            onClick={() =>{
+            if(!selectedCallback) return;
+            handleCompleteCallback(selectedCallback, "declined")}}>
             Declined
         </button>
 

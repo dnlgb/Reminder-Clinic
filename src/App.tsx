@@ -199,6 +199,42 @@ const handleCancel = async (callbackCancel: Callback) => {
   )
 }
 
+//marca un cb como complt y guarda el resultado de la llmd
+const handleCompleteCallback = async (
+  callbackComplete: CallbackWithClient,
+  callResult: "accepted" | "declined"
+) => {
+  const { error } = await supabase
+    .from("callbacks")
+    .update({
+      status: "completed",
+      call_result: callResult,
+      next_reminder_at: null
+    })
+    .eq("id", callbackComplete.id)
+
+  if (error) {
+    console.log(error)
+    return
+  }
+  //modificar el rct
+  setCallbacks(
+    //recorre los cb hasta encontrar el que acabamos de modi
+    callbacks.map((currentCallback) => {
+      if (currentCallback.id === callbackComplete.id) {
+        return {
+          ...currentCallback,
+          status: "completed",
+          call_result: callResult,
+          next_reminder_at: null
+        }
+      }
+
+      return currentCallback
+    })
+  )
+}
+
 //recibe el callback, y se anade al final
 const addCallback = async (newCallback: NewCallback) => {
   const { data, error } = await supabase
@@ -273,6 +309,7 @@ const addCallback = async (newCallback: NewCallback) => {
             <Callbacks
               callbacks={callbacks}
               handleCancel={handleCancel}
+              handleCompleteCallback={handleCompleteCallback}
             />
           </>
           }
