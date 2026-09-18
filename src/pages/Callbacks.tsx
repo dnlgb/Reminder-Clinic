@@ -13,6 +13,9 @@ function Callbacks({
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
 
+const [selectedCallback, setSelectedCallback] = 
+    useState<CallbackWithClient |null>(null);
+
     const filteredCallbacks = callbacks.filter((callback) => {
 
     const clientName = callback.clientes?.name ?? "";
@@ -116,6 +119,8 @@ return (
         <div
             className="callback-row"
             key={callback.id}
+            onClick={() =>setSelectedCallback(callback)}
+
             >
 
                 {/* CLIENT */}
@@ -159,7 +164,9 @@ return (
 
                 <span className="callback-source-dot"></span>
 
-                <span>—</span>
+                    <span>
+                        {client?.apps?.name ?? "—"}
+                    </span>
 
                 </div>
 
@@ -172,11 +179,14 @@ return (
                 <div className="callback-actions">
 
                 <button
-                    className="callback-menu-button"
-                    onClick={() => handleCancel(callback)}
-                    title="Cancel callback"
+                className="callback-menu-button"
+                onClick={(e) => {
+                e.stopPropagation();
+                setSelectedCallback(callback);
+                }}
+                title="Open callback"
                 >
-                    ⋯
+                ⋯
                 </button>
 
                 </div>
@@ -188,7 +198,95 @@ return (
         )}
 
     </div>
+        {selectedCallback && (
+    <aside className="callback-panel">
 
+    <div className="callback-panel-header">
+        <div>
+            <span className="callback-panel-label">
+            Callback
+            </span>
+
+        <h2>
+            {selectedCallback.clientes?.name ?? "Unknown client"}
+        </h2>
+    </div>
+
+    <button
+        className="callback-panel-close"
+        onClick={() => setSelectedCallback(null)}
+        >
+            ×
+    </button>
+    </div>
+
+    <div className="callback-panel-client">
+        <span>
+            {selectedCallback.clientes?.phone ?? "No phone"}
+        </span>
+
+        <span>
+            {formatDate(selectedCallback.scheduled_at)} ·{" "}
+            {formatTime(selectedCallback.scheduled_at)}
+        </span>
+    </div>
+
+    <div className="callback-panel-section">
+        <span className="callback-panel-section-title">
+            Call outcome
+        </span>
+
+    <div className="callback-outcomes">
+
+        <button>
+            Accepted
+        </button>
+
+        <button>
+            Rescheduled
+        </button>
+
+        <button>
+            Snooze
+        </button>
+
+        <button>
+            Declined
+        </button>
+
+    </div>
+    </div>
+
+    <div className="callback-panel-section">
+    <label
+        className="callback-panel-section-title"
+        htmlFor="callback-notes"
+    >
+        Notes
+    </label>
+
+    <textarea
+        id="callback-notes"
+        placeholder="Add notes about the call..."
+        defaultValue={selectedCallback.notes ?? ""}
+    />
+    </div>
+
+    <div className="callback-panel-actions">
+    <button
+        className="callback-panel-cancel"
+        onClick={() => setSelectedCallback(null)}
+    >
+        Cancel
+    </button>
+
+        <button className="callback-panel-save">
+            Save callback
+        </button>
+    </div>
+
+    </aside>
+)}
     </section>
 );
 }
