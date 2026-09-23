@@ -229,10 +229,61 @@ const handleCompleteCallback = async (
           next_reminder_at: null
         }
       }
-
+      
       return currentCallback
     })
-  )
+  ) 
+}
+
+const handleReschedule = async (
+  callbackReschedule: CallbackWithClient,
+  newScheduledAt: string
+) => {
+    const scheduledAt = new Date(
+      newScheduledAt
+    ).toISOString();
+
+    const { error } = await supabase
+      .from("callbacks")
+      .update({
+        status: "completed",
+        call_result: "rescheduled",
+        next_reminder_at: null
+      })
+      .eq("id", callbackReschedule.id);
+      if(error){
+        console.log(error)
+        return; //evita que se cree un nuevo cb si el cb original no pudo act
+      }
+      const { data, error: newCallbackError } = await supabase
+        .from ("callbacks")
+        .insert({
+          scheduled_at: scheduledAt,
+          status: "pending",
+          call_result: null,
+          next_reminder_at: null,
+          client_id: callbackReschedule.client_id
+        })
+        .select()
+        .single();
+
+      if (newCallbackError) {
+        console.log(newCallbackError);
+        return;
+      }
+      setCallbacks(
+        callbacks.map((currentCallback) => {
+          if (currentCallback.id === callbackReschedule.id) {
+            return {
+              ...currentCallback,
+              status: "completed" as const,
+              call_result: "rescheduled" as const,
+              next_reminder_at: null
+            };
+          }
+          return currentCallback;
+        }).concat(data as CallbackWithClient)
+);
 }
 
 //recibe el callback, y se anade al final
@@ -316,6 +367,7 @@ const addCallback = async (newCallback: NewCallback) => {
               callbacks={callbacks}
               handleCancel={handleCancel}
               handleCompleteCallback={handleCompleteCallback}
+              handleReschedule={handleReschedule}
             />
           </>
           }

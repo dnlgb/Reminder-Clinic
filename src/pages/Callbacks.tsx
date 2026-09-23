@@ -3,59 +3,65 @@ import type { CallbackWithClient } from "../types";
 import "./Callbacks.css";
 
 function Callbacks({
-  callbacks,
-  handleCancel,
-  handleCompleteCallback
+    callbacks,
+    handleCancel,
+    handleCompleteCallback,
+    handleReschedule
 }: {
-  callbacks: CallbackWithClient[];
-  handleCancel: (callback: CallbackWithClient) => void;
-  handleCompleteCallback: (
+    callbacks: CallbackWithClient[];
+    handleCancel: (callback: CallbackWithClient) => void;
+    handleCompleteCallback: (
     callback: CallbackWithClient,
     callResult: "accepted" | "declined"
-  ) => void;
+) => void;
+handleReschedule: (
+    callback: CallbackWithClient,
+    newScheduledAt: string) => void;
 }) {
 
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+const [search, setSearch] = useState("");
+const [statusFilter, setStatusFilter] = useState("all");
+const [isRescheduling, setIsRescheduling] = useState(false);
+const [rescheduledAt, setRescheduledAt] = useState("");
 
-  const [selectedCallback, setSelectedCallback] =
+const [selectedCallback, setSelectedCallback] =
     useState<CallbackWithClient | null>(null);
 
 
   // HELPERS
 
-  const getInitials = (name: string) => {
+const getInitials = (name: string) => {
     return name
-      .split(" ")
-      .slice(0, 2)
-      .map((word) => word[0])
-      .join("")
-      .toUpperCase();
-  };
+        .split(" ")
+        .slice(0, 2)
+        .map((word) => word[0])
+        .join("")
+        .toUpperCase();
+};
 
-  const formatDate = (date: string) => {
+const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("es-CO", {
-      day: "2-digit",
-      month: "short"
+        day: "2-digit",
+        month: "short"
     });
-  };
+};
 
-  const formatTime = (date: string) => {
+const formatTime = (date: string) => {
     return new Date(date).toLocaleTimeString("es-CO", {
-      hour: "2-digit",
-      minute: "2-digit"
+        hour: "2-digit",
+        minute: "2-digit"
     });
-  };
-
-  const getDateKey = (date: Date) => {
+};
+// CB del mismo dia
+const getDateKey = (date: Date) => {
     return [
-      date.getFullYear(),
-      String(date.getMonth() + 1).padStart(2, "0"),
-      String(date.getDate()).padStart(2, "0")
-    ].join("-");
-  };
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0")
+    ].join("-");//une las fechas
+};
 
-  const getGroupDate = (dateString: string) => {
+    const getGroupDate = (dateString: string) => {
     const date = new Date(dateString);
 
     const today = new Date();
@@ -68,72 +74,72 @@ function Callbacks({
     const tomorrowKey = getDateKey(tomorrow);
 
     if (dateKey === todayKey) {
-      return {
+    return {
         title: "Today",
         subtitle: date.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric"
+        month: "short",
+        day: "numeric"
         })
-      };
+    };
     }
 
     if (dateKey === tomorrowKey) {
-      return {
+    return {
         title: "Tomorrow",
         subtitle: date.toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric"
+        month: "short",
+        day: "numeric"
         })
-      };
+    };
     }
 
     return {
-      title: date.toLocaleDateString("en-US", {
+    title: date.toLocaleDateString("en-US", {
         weekday: "long"
-      }),
-      subtitle: date.toLocaleDateString("en-US", {
+    }),
+    subtitle: date.toLocaleDateString("en-US", {
         month: "short",
         day: "numeric"
-      })
+    })
     };
-  };
+};
 
 
   // FILTER
 
-  const filteredCallbacks = callbacks.filter((callback) => {
+    const filteredCallbacks = callbacks.filter((callback) => {
     const clientName = callback.clientes?.name ?? "";
     const clientPhone = callback.clientes?.phone ?? "";
 
     const matchesSearch =
-      clientName.toLowerCase().includes(search.toLowerCase()) ||
-      clientPhone.includes(search);
+        clientName.toLowerCase().includes(search.toLowerCase()) ||
+        clientPhone.includes(search);
 
     const matchesStatus =
-      statusFilter === "all" ||
-      callback.status === statusFilter;
+        statusFilter === "all" ||
+        callback.status === statusFilter;
 
     return matchesSearch && matchesStatus;
-  });
+});
 
 
   // GROUP BY DAY
 
 const groupedCallbacks = filteredCallbacks.reduce<
-    Record<string, CallbackWithClient[]>
-    >((groups, callback) => {
-
+    Record<string, CallbackWithClient[]> //obtiene objetos record<clave, valor>
+    >((groups, callback) => { //group recorre array y va acumulando por vuelta cb es el elemnto "actual"
+    //obtiene el dia
     const dateKey = getDateKey(
         new Date(callback.scheduled_at)
     );
-
+    //pregunta si ya exite un grupo para x dia
     if (!groups[dateKey]) {
         groups[dateKey] = [];
     }
-
+    //metemos el cb a su dia 
     groups[dateKey].push(callback);
 
-    return groups;
+    return groups; //se lleva el acumulador a la sig vuelta
 
 }, {});
 
@@ -350,20 +356,19 @@ return (
         <span className="callback-panel-section-title">
             Call outcome
         </span>
-
+    
+    {!isRescheduling && ( //mostramos los botones solo si isrch es f
     <div className="callback-outcomes">
-
         <button
         onClick={() =>{
             if(!selectedCallback) return;
-            
             handleCompleteCallback(selectedCallback, "accepted")
-            console.log(selectedCallback)
             }}>
             Accepted
         </button>
 
-        <button>
+        <button
+        onClick={() => setIsRescheduling(true)}>
             Rescheduled
         </button>
 
@@ -377,9 +382,43 @@ return (
             handleCompleteCallback(selectedCallback, "declined")}}>
             Declined
         </button>
+    </div>
+    )}
+    {isRescheduling && (
+    <div>
+    <input
+        type="datetime-local"
+        value={rescheduledAt}
+        onChange={(event) =>
+        setRescheduledAt(event.target.value)
+        }
+    />
 
+    <button
+        onClick={() => {
+            setIsRescheduling(false);
+            setRescheduledAt("");
+        }}
+    >
+        Cancel
+    </button>
+
+        <button disabled={!rescheduledAt}
+        onClick={() =>
+        {if(!selectedCallback)return;
+            handleReschedule(
+                selectedCallback,
+                rescheduledAt
+            )
+        }
+        }>
+            Reschedule
+        </button>
     </div>
+)}
     </div>
+            
+
 
     <div className="callback-panel-section">
     <label
