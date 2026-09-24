@@ -285,6 +285,76 @@ const handleReschedule = async (
         }).concat(data as CallbackWithClient)
 );
 }
+const handleSnooze = async (
+  callbackSnooze: CallbackWithClient,
+  minutes: number
+) => {
+  const reminderAt = new Date();
+
+  reminderAt.setMinutes(
+    reminderAt.getMinutes() + minutes
+  );
+
+  const reminderAtISO = reminderAt.toISOString();
+    console.log("REMINDER:", reminderAtISO);
+
+  const {error} = await supabase
+  .from("callbacks")
+  .update({
+    next_reminder_at: reminderAtISO
+  })
+  .eq("id", callbackSnooze.id)
+  if(error){
+    console.log("snooze:", error);
+    return;
+  }
+  console.log("SNOOZE UPDATED");
+  setCallbacks(
+    callbacks.map((currentCallback) => {
+      if (currentCallback.id === callbackSnooze.id) {
+        return {
+          ...currentCallback,
+          next_reminder_at: reminderAtISO
+        };
+      }
+
+      return currentCallback;
+    })
+  );
+};
+const handleCustomSnooze = async (
+  callbackSnooze: CallbackWithClient,
+  customReminderAt: string
+) => {
+  const reminderAtISO = new Date(
+    customReminderAt
+  ).toISOString();
+
+  const { error } = await supabase
+    .from("callbacks")
+    .update({
+      next_reminder_at: reminderAtISO
+    })
+    .eq("id", callbackSnooze.id);
+
+  if (error) {
+    console.log("CUSTOM SNOOZE ERROR:", error);
+    return;
+  }
+
+  setCallbacks(
+    callbacks.map((currentCallback) => {
+      if (currentCallback.id === callbackSnooze.id) {
+        return {
+          ...currentCallback,
+          next_reminder_at: reminderAtISO
+        };
+      }
+
+      return currentCallback;
+    })
+  );
+};
 
 //recibe el callback, y se anade al final
 const addCallback = async (newCallback: NewCallback) => {
@@ -368,6 +438,8 @@ const addCallback = async (newCallback: NewCallback) => {
               handleCancel={handleCancel}
               handleCompleteCallback={handleCompleteCallback}
               handleReschedule={handleReschedule}
+              handleSnooze={handleSnooze}
+              handlec
             />
           </>
           }

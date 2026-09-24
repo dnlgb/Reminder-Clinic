@@ -6,7 +6,9 @@ function Callbacks({
     callbacks,
     handleCancel,
     handleCompleteCallback,
-    handleReschedule
+    handleReschedule,
+    handleSnooze,
+    handleCustomSnooze
 }: {
     callbacks: CallbackWithClient[];
     handleCancel: (callback: CallbackWithClient) => void;
@@ -17,12 +19,25 @@ function Callbacks({
 handleReschedule: (
     callback: CallbackWithClient,
     newScheduledAt: string) => void;
-}) {
+handleSnooze:(
+    callback: CallbackWithClient,
+    minutes: number
+) => void
+handleCustomSnooze: (
+    callback: CallbackWithClient,
+    customReminderAt: string
+) => void;
+}) 
+
+{
 
 const [search, setSearch] = useState("");
 const [statusFilter, setStatusFilter] = useState("all");
 const [isRescheduling, setIsRescheduling] = useState(false);
 const [rescheduledAt, setRescheduledAt] = useState("");
+const [isSnoozing, setIsSnoozing] = useState(false);
+const [customReminderAt, setCustomReminderAt] = useState("");
+const [isCustomSnoozing, setIsCustomSnoozing] = useState(false);
 
 const [selectedCallback, setSelectedCallback] =
     useState<CallbackWithClient | null>(null);
@@ -187,7 +202,6 @@ return (
         </div>
     </header>
 
-      {/* TOOLBAR */}
     <div className="callbacks-toolbar">
 
         <div className="callbacks-search">
@@ -212,10 +226,7 @@ return (
 
     </div>
 
-      {/* CALLBACKS */}
         <div className="callbacks-container">
-
-        {/* LIST HEADER */}
         <div className="callbacks-list-header">
             <span>Client</span>
             <span>Scheduled</span>
@@ -357,7 +368,7 @@ return (
             Call outcome
         </span>
     
-    {!isRescheduling && ( //mostramos los botones solo si isrch es f
+    {!isRescheduling && !isSnoozing && ( //mostramos los botones solo si isrch es f
     <div className="callback-outcomes">
         <button
         onClick={() =>{
@@ -372,7 +383,9 @@ return (
             Rescheduled
         </button>
 
-        <button>
+        <button
+        onClick={() => setIsSnoozing(true)}>
+            
             Snooze
         </button>
 
@@ -384,6 +397,68 @@ return (
         </button>
     </div>
     )}
+    {isSnoozing && (
+
+    <div className="callback-outcomes">
+        <button
+        onClick={() => {
+            if (!selectedCallback) return;
+
+            handleSnooze(selectedCallback, 15)
+        }}
+        >
+            +15 min</button>
+        <button
+        onClick={() =>{
+            if(!selectedCallback) return;
+            handleSnooze(selectedCallback, 60)
+        }}
+        >+1 hour</button>
+        <button
+        onClick={() => {
+            if(!selectedCallback) return;
+            handleSnooze(selectedCallback, 180)
+        }}>
+            +3 hours</button>
+        
+        <button
+        onClick={() => {
+            setIsCustomSnoozing(true)
+        setCustomReminderAt("")
+    }}>
+        Custom time</button>
+    </div>
+)}
+{isCustomSnoozing && (
+    <div>
+        <input
+        type="datetime-local"
+        value={customReminderAt}
+        onChange={(event) =>
+            setCustomReminderAt(event.target.value)
+        }
+        />
+
+        <button
+        onClick={() => {
+            setIsCustomSnoozing(false);
+            setCustomReminderAt("")}}
+        >
+        Cancel
+        </button>
+
+        <button disabled={!customReminderAt}
+        onClick={() => { 
+            if (!selectedCallback) return; 
+            handleCustomSnooze( selectedCallback, customReminderAt ); 
+        setIsCustomSnoozing(false);
+        setCustomReminderAt("");
+        }}
+        >
+        Set reminder
+        </button>
+    </div>
+)}
     {isRescheduling && (
     <div>
     <input
