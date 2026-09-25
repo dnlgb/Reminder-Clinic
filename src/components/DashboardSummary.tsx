@@ -1,5 +1,5 @@
 import type { CallbackWithClient } from "../types"
-import "../pages/Home.css"
+import "../Styles/Home.css"
 function DashboardSummary({
     callbacks
 }: {

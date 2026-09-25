@@ -1,6 +1,6 @@
 import { useState } from "react";
 import MainLayout from "./layouts/MainLayout";
-import "./App.css";
+import "./styles/App.css"
 import { useEffect } from "react";
 import { Routes } from "react-router-dom";
 import { Route } from "react-router-dom";
@@ -421,9 +421,36 @@ const addCallback = async (newCallback: NewCallback) => {
     return;
   }
 
+  // Buscamos la información del cliente para completar CallbackWithClient
+  const { data: clientData, error: clientError } = await supabase
+    .from("clientes")
+    .select(`
+      id,
+      name,
+      phone,
+      source,
+      apps (
+        id,
+        name
+      )
+    `)
+    .eq("id", newCallback.client_id)
+    .single();
+
+  if (clientError) {
+    console.log(clientError);
+    return;
+  }
+
   setCallbacks([
     ...callbacks,
-    data as CallbackWithClient
+    {
+      ...(data as Callback),
+      clientes: {
+        ...clientData,
+          apps: clientData.apps[0] ?? null //toma el primer elemento[0] si no existe null
+      }
+    }
   ]);
 };
 

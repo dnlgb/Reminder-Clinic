@@ -3,6 +3,7 @@ import { useEffect } from "react"
 import type { Client, NewClient } from "../types"
 import { supabase } from "../lib/supabase"
 import { data } from "react-router-dom"
+import "../styles/ClientForm.css"
 
 function ClientForm(
     {onCreateClientndCallbck, editingClient, onUpdateClient}: {
@@ -168,7 +169,6 @@ function ClientForm(
                         onUpdateClient(updatedClient)
 
                     } else {
-
                         onCreateClientndCallbck(
                             client,
                             {

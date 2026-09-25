@@ -1,0 +1,160 @@
+/* =========================
+   CLIENT FORM
+========================= */
+
+.client-form-card {
+  width: 100%;
+  padding: 28px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.client-form-header {
+  margin-bottom: 30px;
+}
+
+.client-form-header h2 {
+  margin: 0 0 6px;
+  color: #1B2F5B;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.client-form-header p {
+  margin: 0;
+  color: #7b8494;
+  font-size: 14px;
+}
+
+
+/* =========================
+   FORM SECTION
+========================= */
+
+.client-form-section {
+  padding: 24px 0;
+  border-top: 1px solid #eef0f3;
+}
+
+.client-form-section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.client-form-section-header h3 {
+  margin: 0 0 4px;
+  color: #1B2F5B;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.client-form-section-header p {
+  margin: 0;
+  color: #7b8494;
+  font-size: 13px;
+}
+
+
+/* =========================
+   STEP NUMBER
+========================= */
+
+.step-number {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #eef2fa;
+  color: #2F4E8A;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+/* =========================
+   LABELS
+========================= */
+
+.client-form-section label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 16px;
+  color: #1B2F5B;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.client-form-section label span {
+  color: #8a91a0;
+  font-weight: 400;
+}
+
+
+/* =========================
+   INPUTS
+========================= */
+
+.client-form-section input,
+.client-form-section select,
+.client-form-section textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid #e1e5eb;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #1B2F5B;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+}
+
+.client-form-section input,
+.client-form-section select {
+  height: 44px;
+}
+
+.client-form-section textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.client-form-section input:focus,
+.client-form-section select:focus,
+.client-form-section textarea:focus {
+  border-color: #2F4E8A;
+  box-shadow: 0 0 0 3px rgba(47, 78, 138, 0.08);
+}
+
+
+/* =========================
+   SUBMIT
+========================= */
+
+.client-form-submit {
+  width: 100%;
+  height: 46px;
+  margin-top: 8px;
+  border: none;
+  border-radius: 10px;
+  background: #1B2F5B;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.client-form-submit:hover {
+  background: #2F4E8A;
+}

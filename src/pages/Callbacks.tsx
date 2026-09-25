@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { CallbackWithClient } from "../types";
-import "./Callbacks.css";
+import "../Styles/Callbacks.css"
 
 function Callbacks({
     callbacks,

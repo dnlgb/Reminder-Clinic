@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ClientWithApp } from "../types"
-
+import "../styles/clientList.css"
 
 function ClientList({
     clients,
@@ -15,13 +15,19 @@ function ClientList({
 })
 {
     const [search, setSearch] = useState("")
+    const [openMenu, setOpenMenu] = useState<string | null>(null)
     return (
-    <section>
-        <h2>Clientes</h2>
-        <input
-        type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
+    <section className="client-list">
+        <div className="client-list-header">
+            <h2>Clientes</h2>
+        </div>
+
+            <input
+            className="client-search"
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="search clients..."
         
         />
         
@@ -38,26 +44,54 @@ function ClientList({
             {`${client.name} - ${client.phone} ${client.apps?.name}`}
             </div>
         <div className="client-action">
+                <button
+        type="button"
+        onClick={() =>
+            setOpenMenu(
+                openMenu === client.id
+                    ? null
+                    : client.id
+            )
+        }
+    >
+        ⋯
+    </button>
+
+    {openMenu === client.id && (
+        <div className="client-menu">
+
             <button
                 type="button"
-                onClick={() => onEditClient(client)}
+                onClick={() => {
+                    onCallbackClient(client)
+                    setOpenMenu(null)
+                }}
             >
-                Edit
+                Create callback
             </button>
 
             <button
                 type="button"
-                onClick={() => onDeleteClient(client)}
+                onClick={() => {
+                    onEditClient(client)
+                    setOpenMenu(null)
+                }}
             >
-                Delete
+                Edit client
             </button>
 
             <button
                 type="button"
-                onClick={() => onCallbackClient(client)}
+                onClick={() => {
+                    onDeleteClient(client)
+                    setOpenMenu(null)
+                }}
             >
-                Callback
+                Delete client
             </button>
+
+        </div>
+    )}
         </div>
     </li>
     ))}
