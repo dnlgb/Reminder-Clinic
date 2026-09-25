@@ -45,30 +45,71 @@ useEffect(() => {
 }, [])
 
 //async porq esperamos que se comunique con SB
-const addClient = async (newClient: NewClient) =>{
-  console.log("Cliente que voy a insertar:", newClient)
-
-//insertamos newC en la tabla clientes
-//error: informacion del error
-const { data,error } = await supabase
-      .from("clientes")
-      .insert(newClient)
-      .select()//registro nuevo
-      .single()//como esperamos un solo registro, lo convierte en un objeto en vez de un array
-
-      if (error) {
-  console.log(error)
-  return
-  //return porq si insert falla no queremos continuar como si funcionara
-}
-
-setClients([
-  ...clients,
-  {
-    ...data,
-    apps: null
+const createClientndCallbck = async (
+  newClient: NewClient,
+  callback: {
+    scheduled_at: string
+    notes?: string
   }
-])
+) => {
+
+  //Creamos el cliente
+  const { data: clientData, error: clientError } = await supabase
+    .from("clientes")
+    .insert(newClient)
+    .select()
+    .single()
+
+  if (clientError) {
+    console.log("CLIENT ERROR:", clientError)
+    return
+  }
+
+  //Creamos el callback usando el id del cliente recién creado
+  const scheduledAt = new Date(
+    callback.scheduled_at
+  ).toISOString()
+
+  const { data: callbackData, error: callbackError } = await supabase
+    .from("callbacks")
+    .insert({
+      client_id: clientData.id,
+      scheduled_at: scheduledAt,
+      notes: callback.notes || null,
+      status: "pending",
+      call_result: null,
+      next_reminder_at: null
+    })
+    .select()
+    .single()
+
+  if (callbackError) {
+    console.log("CALLBACK ERROR:", callbackError)
+    return
+  }
+
+  // Actualizar clientes en React
+  setClients([
+    ...clients,
+    {
+      ...clientData,
+      apps: null
+    }
+  ])
+
+  //Actualizar callbacks en React
+  setCallbacks([
+    ...callbacks,{
+      ...(callbackData as Callback),
+      clientes: {
+        id: clientData.id,
+        name: clientData.name,
+        phone: clientData.phone,
+        source: clientData.source,
+        apps: null
+      }
+    }
+  ])
 }
 
 //soft delete: desactiva el cliente en vez de eliminarlo
@@ -406,7 +447,7 @@ const addCallback = async (newCallback: NewCallback) => {
           element={
           <>
             <ClientForm
-              onAddClient={addClient}
+              onCreateClientndCallbck={createClientndCallbck}
               editingClient={editingClient}
               onUpdateClient={updateClient}
             />
@@ -439,7 +480,7 @@ const addCallback = async (newCallback: NewCallback) => {
               handleCompleteCallback={handleCompleteCallback}
               handleReschedule={handleReschedule}
               handleSnooze={handleSnooze}
-              handlec
+              handleCustomSnooze={handleCustomSnooze}
             />
           </>
           }
