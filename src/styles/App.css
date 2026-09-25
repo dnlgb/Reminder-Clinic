@@ -33,7 +33,7 @@
 .sidebar a:hover {
   color: #3a3636;
   background: #e0e0e0;
-  transition: background 1s;
+  transition: background 0.2s ease;
 }
 
 .sidebar-nav {
@@ -58,4 +58,15 @@
   gap: 24px;
   background: #f7f7f4;
 }
+/*clientpage*/
+.clients-page {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
 
+.clients-form-column,
+.clients-list-column {
+  min-width: 0;
+}

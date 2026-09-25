@@ -470,32 +470,37 @@ const addCallback = async (newCallback: NewCallback) => {
         />
 
         <Route
-          path="/clients"
-          element={
-          <>
-            <ClientForm
-              onCreateClientndCallbck={createClientndCallbck}
-              editingClient={editingClient}
-              onUpdateClient={updateClient}
-            />
+  path="/clients"
+  element={
+    <div className="clients-page">
 
-            <ClientList
-              clients={clients}
-              onDeleteClient={deleteClient}
-              onEditClient={startEditing}
-              onCallbackClient={startCallback}
-            />
+      <div className="clients-form-column">
+  <ClientForm
+    onCreateClientndCallbck={createClientndCallbck}
+    editingClient={editingClient}
+    onUpdateClient={updateClient}
+  />
+</div>
 
-            //si hay un cliente seleccionado para callback, mostramos el formulario
-            {callbackClient && (
-              <CallbacksForm
-                client={callbackClient}
-                onAddCallback={addCallback}
-              />
-            )}
-          </>
-          }
-        />
+<div className="clients-list-column">
+  <ClientList
+    clients={clients}
+    onDeleteClient={deleteClient}
+    onEditClient={startEditing}
+    onCallbackClient={startCallback}
+  />
+
+  {callbackClient && (
+    <CallbacksForm
+      client={callbackClient}
+      onAddCallback={addCallback}
+    />
+  )}
+</div>
+
+    </div>
+  }
+/>
 
         <Route
           path="/callbacks"
