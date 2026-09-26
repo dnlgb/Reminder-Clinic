@@ -34,7 +34,10 @@ useEffect(() => {
 
     if (error) {
       console.log(error)
+      setClientsError("No se pudieron cargar los clientes")
       setClientsLoading(false)
+      
+
       return
     }
 
@@ -42,7 +45,7 @@ useEffect(() => {
     if (data) {
       setClients(clientsWithApps)
     }
-    
+    setClientsLoading(false)
   }
 
   loadClients()
@@ -182,9 +185,12 @@ const updateClient = async (updatedClient: Client) => {
 
 //callbacks ahora vienen desde Supabase
 const [callbacks, setCallbacks] = useState<CallbackWithClient[]>([])
+const [callbacksLoading, setCallbacksLoading] = useState(true)
+const [callbacksError, setCallbacksError] = useState<string | null>(null)
 
 useEffect(() => {
   const loadCallbacks = async () => {
+    setCallbacksLoading(true)
     const { data, error } = await supabase
       .from("callbacks")
       //sb devuelve=>:
@@ -204,11 +210,15 @@ useEffect(() => {
 
     if (error) {
       console.log(error)
+      setCallbacksError("No se pudieron cargar los callbacks")
+      setCallbacksLoading(false)
       return
     }
 
     setCallbacks(data as CallbackWithClient[])
     console.log("Callbacks:", data)
+
+    setCallbacksLoading(false)
   }
 
   loadCallbacks()
@@ -488,8 +498,12 @@ const addCallback = async (newCallback: NewCallback) => {
 
 <div className="clients-list-column">
   {clientsLoading ? (
-    <p>Cargando clientes...</p>)
-    : (
+    <p>Loading clients list...</p>)
+    : clientsError ? (
+      <p>{clientsError}</p>
+    ) : clients.length === 0 ? (
+      <p>No clients founds</p>
+    ) :(
   <ClientList
     clients={clients}
     onDeleteClient={deleteClient}
@@ -516,6 +530,8 @@ const addCallback = async (newCallback: NewCallback) => {
           <>
             <Callbacks
               callbacks={callbacks}
+              callbacksLoading={callbacksLoading}
+              callbacksError={callbacksError}
               handleCancel={handleCancel}
               handleCompleteCallback={handleCompleteCallback}
               handleReschedule={handleReschedule}

@@ -8,7 +8,9 @@ function Callbacks({
     handleCompleteCallback,
     handleReschedule,
     handleSnooze,
-    handleCustomSnooze
+    handleCustomSnooze,
+    callbacksLoading,
+    callbacksError
 }: {
     callbacks: CallbackWithClient[];
     handleCancel: (callback: CallbackWithClient) => void;
@@ -27,6 +29,8 @@ handleCustomSnooze: (
     callback: CallbackWithClient,
     customReminderAt: string
 ) => void;
+callbacksLoading: boolean
+callbacksError: string | null
 }) 
 
 {
@@ -235,10 +239,18 @@ return (
             <span></span>
         </div>
 
-    {filteredCallbacks.length === 0 ? (
+    {callbacksLoading ? (
         <div className="callback-empty">
-            No callbacks found.
+            Loading callbacks...
         </div>
+) : callbacksError ?(
+    <div className="callback-empty">
+        {callbacksError}
+    </div>
+) : filteredCallbacks.length === 0 ? (
+    <div className="callback-empty">
+        No callbacks found.
+    </div>
 ) : (
     callbackGroups.map(([dateKey, dayCallbacks]) => {
         const groupDate = getGroupDate(dayCallbacks[0].scheduled_at);
