@@ -22,6 +22,8 @@ import { supabase } from "./lib/supabase";
 function App() {
 //refactori
 const [clients, setClients] = useState<ClientWithApp[]>([])
+const [clientsLoading, setClientsLoading] = useState(true) //clients "cargando"
+const [clientsError, setClientsError] = useState<string | null>(null)
 //
 useEffect(() => {
   const loadClients = async () => {
@@ -32,6 +34,7 @@ useEffect(() => {
 
     if (error) {
       console.log(error)
+      setClientsLoading(false)
       return
     }
 
@@ -39,6 +42,7 @@ useEffect(() => {
     if (data) {
       setClients(clientsWithApps)
     }
+    
   }
 
   loadClients()
@@ -483,12 +487,16 @@ const addCallback = async (newCallback: NewCallback) => {
 </div>
 
 <div className="clients-list-column">
+  {clientsLoading ? (
+    <p>Cargando clientes...</p>)
+    : (
   <ClientList
     clients={clients}
     onDeleteClient={deleteClient}
     onEditClient={startEditing}
     onCallbackClient={startCallback}
   />
+  )}
 
   {callbackClient && (
     <CallbacksForm
