@@ -468,6 +468,35 @@ const addCallback = async (newCallback: NewCallback) => {
   ]);
 };
 
+const handleSaveCallbackNotes = async (
+  callback: CallbackWithClient,
+  notes: string
+) => {
+  const { error } = await supabase
+    .from("callbacks")
+    .update({
+      notes: notes || null
+    })
+    .eq("id", callback.id)
+
+  if (error) {
+    console.log("SAVE NOTES ERROR:", error)
+    return
+  }
+
+  setCallbacks(
+    callbacks.map((currentCallback) => {
+      if (currentCallback.id === callback.id) {
+        return {
+          ...currentCallback,
+          notes: notes || null
+        }
+      }
+
+      return currentCallback
+    })
+  )
+}
 
   return (
     <>
@@ -502,7 +531,7 @@ const addCallback = async (newCallback: NewCallback) => {
     : clientsError ? (
       <p>{clientsError}</p>
     ) : clients.length === 0 ? (
-      <p>No clients founds</p>
+      <p>No clients found</p>
     ) :(
   <ClientList
     clients={clients}
@@ -537,6 +566,7 @@ const addCallback = async (newCallback: NewCallback) => {
               handleReschedule={handleReschedule}
               handleSnooze={handleSnooze}
               handleCustomSnooze={handleCustomSnooze}
+              handleSaveCallbackNotes={handleSaveCallbackNotes}
             />
           </>
           }

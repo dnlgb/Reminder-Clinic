@@ -10,7 +10,8 @@ function Callbacks({
     handleSnooze,
     handleCustomSnooze,
     callbacksLoading,
-    callbacksError
+    callbacksError,
+    handleSaveCallbackNotes
 }: {
     callbacks: CallbackWithClient[];
     handleCancel: (callback: CallbackWithClient) => void;
@@ -31,6 +32,11 @@ handleCustomSnooze: (
 ) => void;
 callbacksLoading: boolean
 callbacksError: string | null
+handleSaveCallbackNotes: (
+    callback: CallbackWithClient,
+    notes: string
+) => void
+
 }) 
 
 {
@@ -39,9 +45,18 @@ const [search, setSearch] = useState("");
 const [statusFilter, setStatusFilter] = useState("all");
 const [isRescheduling, setIsRescheduling] = useState(false);
 const [rescheduledAt, setRescheduledAt] = useState("");
+const [customSnoozeHours, setCustomSnoozeHours] = useState("");
+const [customSnoozeMinutes, setCustomSnoozeMinutes] = useState("");
 const [isSnoozing, setIsSnoozing] = useState(false);
-const [customReminderAt, setCustomReminderAt] = useState("");
 const [isCustomSnoozing, setIsCustomSnoozing] = useState(false);
+const [callbackNotes, setCallbackNotes] = useState("");
+
+const [selectedCallResult, setSelectedCallResult] =
+    useState<"accepted" | "rescheduled" |"declined" | null>(null);
+const [selectedSnoozeAt, setSelectedSnoozeAt] =
+    useState<string | null>(null);
+const [selectedRescheduleAt, setSelectedRescheduleAt] =
+    useState("");
 
 const [selectedCallback, setSelectedCallback] =
     useState<CallbackWithClient | null>(null);
@@ -235,6 +250,7 @@ return (
             <span>Client</span>
             <span>Scheduled</span>
             <span>Source</span>
+            <span>Notes</span>
             <span>Status</span>
             <span></span>
         </div>
@@ -318,6 +334,14 @@ return (
                 {client?.apps?.name ?? "—"}
             </div>
 
+            <div className="callback-notes">
+                {callback.notes
+                    ? callback.notes.length > 30
+                        ? `${callback.notes.slice(0, 30)}...`
+                        : callback.notes
+                    : "—"}
+            </div>
+
             <span className="callback-status">
                 {callback.status}
             </span>
@@ -385,7 +409,7 @@ return (
         <button
         onClick={() =>{
             if(!selectedCallback) return;
-            handleCompleteCallback(selectedCallback, "accepted")
+            setSelectedCallResult("accepted");
             }}>
             Accepted
         </button>
@@ -404,7 +428,7 @@ return (
         <button
             onClick={() =>{
             if(!selectedCallback) return;
-            handleCompleteCallback(selectedCallback, "declined")}}>
+            setSelectedCallResult("declined")}}>
             Declined
         </button>
     </div>
@@ -415,61 +439,108 @@ return (
         <button
         onClick={() => {
             if (!selectedCallback) return;
+            const reminderAt = new Date(
+                Date.now() + 15 * 60 * 1000
+                ).toISOString();
 
-            handleSnooze(selectedCallback, 15)
+            setSelectedSnoozeAt(reminderAt);
         }}
         >
             +15 min</button>
         <button
         onClick={() =>{
             if(!selectedCallback) return;
-            handleSnooze(selectedCallback, 60)
+            const reminderAt = new Date(
+                 Date.now() + 60 * 60 * 1000
+                ).toISOString();
+
+            setSelectedSnoozeAt(reminderAt);
         }}
         >+1 hour</button>
         <button
         onClick={() => {
             if(!selectedCallback) return;
-            handleSnooze(selectedCallback, 180)
+            const reminderAt = new Date(
+                Date.now() + 3 * 60 * 60 * 1000
+                ).toISOString();
+
+            setSelectedSnoozeAt(reminderAt);
         }}>
             +3 hours</button>
         
         <button
         onClick={() => {
             setIsCustomSnoozing(true)
-        setCustomReminderAt("")
+            setCustomSnoozeHours("")
+            setCustomSnoozeMinutes("")
     }}>
-        Custom time</button>
+        Custom snooze</button>
     </div>
 )}
 {isCustomSnoozing && (
-    <div>
-        <input
-        type="datetime-local"
-        value={customReminderAt}
+<div className="custom-snooze-duration">
+    <input
+        type="number"
+        min="0"
+        max="8"
+        placeholder="0"
+        value={customSnoozeHours}
         onChange={(event) =>
-            setCustomReminderAt(event.target.value)
+            setCustomSnoozeHours(event.target.value)
         }
-        />
+    />
 
-        <button
+    <span>hours</span>
+
+    <input
+        type="number"
+        min="0"
+        max="59"
+        placeholder="0"
+        value={customSnoozeMinutes}
+        onChange={(event) =>
+            setCustomSnoozeMinutes(event.target.value)
+        }
+    />
+
+    <span>minutes</span>
+
+    <button
         onClick={() => {
             setIsCustomSnoozing(false);
-            setCustomReminderAt("")}}
-        >
-        Cancel
-        </button>
-
-        <button disabled={!customReminderAt}
-        onClick={() => { 
-            if (!selectedCallback) return; 
-            handleCustomSnooze( selectedCallback, customReminderAt ); 
-        setIsCustomSnoozing(false);
-        setCustomReminderAt("");
+            setCustomSnoozeHours("");
+            setCustomSnoozeMinutes("");
         }}
-        >
+    >
+        Cancel
+    </button>
+
+    <button
+        disabled={!customSnoozeHours && !customSnoozeMinutes}
+        onClick={() => {
+            const hours = Number(customSnoozeHours) || 0;
+            const minutes = Number(customSnoozeMinutes) || 0;
+
+            const totalMinutes = hours * 60 + minutes;
+
+            if (totalMinutes <= 0 || totalMinutes > 8 * 60) {
+                return;
+            }
+
+            const reminderAt = new Date(
+                Date.now() + totalMinutes * 60 * 1000
+            ).toISOString();
+
+            setSelectedSnoozeAt(reminderAt);
+
+            setIsCustomSnoozing(false);
+            setCustomSnoozeHours("");
+            setCustomSnoozeMinutes("");
+        }}
+    >
         Set reminder
-        </button>
-    </div>
+    </button>
+</div>
 )}
     {isRescheduling && (
     <div>
@@ -518,7 +589,10 @@ return (
     <textarea
         id="callback-notes"
         placeholder="Add notes about the call..."
-        defaultValue={selectedCallback.notes ?? ""}
+        value={callbackNotes}
+        onChange={(event) =>
+                setCallbackNotes(event.target.value)
+        }
     />
     </div>
 
@@ -530,7 +604,15 @@ return (
         Cancel
     </button>
 
-        <button className="callback-panel-save">
+        <button className="callback-panel-save"
+        onClick={() => 
+        {if(!selectedCallback)return
+            handleSaveCallbackNotes(
+            selectedCallback,
+            callbackNotes
+        );
+    }}
+        >
             Save callback
         </button>
     </div>
