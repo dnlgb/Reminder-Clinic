@@ -11,7 +11,8 @@ function Callbacks({
     handleCustomSnooze,
     callbacksLoading,
     callbacksError,
-    handleSaveCallbackNotes
+    handleSaveCallbackNotes,
+    handleSaveCallback
 }: {
     callbacks: CallbackWithClient[];
     handleCancel: (callback: CallbackWithClient) => void;
@@ -36,6 +37,13 @@ handleSaveCallbackNotes: (
     callback: CallbackWithClient,
     notes: string
 ) => void
+handleSaveCallback: (
+    callback: CallbackWithClient,
+    notes: string,
+    callResult: "accepted" | "rescheduled" | "declined" | null,
+    snoozeAt: string | null,
+    rescheduleAt: string
+) => Promise<boolean>;
 
 }) 
 
@@ -50,6 +58,9 @@ const [customSnoozeMinutes, setCustomSnoozeMinutes] = useState("");
 const [isSnoozing, setIsSnoozing] = useState(false);
 const [isCustomSnoozing, setIsCustomSnoozing] = useState(false);
 const [callbackNotes, setCallbackNotes] = useState("");
+const [selectedSnoozeOption, setSelectedSnoozeOption] =
+    useState<"15m" | "1h" | "3h" | "custom" | null>(null);
+const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
 const [selectedCallResult, setSelectedCallResult] =
     useState<"accepted" | "rescheduled" |"declined" | null>(null);
@@ -364,7 +375,11 @@ return (
         </div>//cbdategroup
     );})
 )}
-
+{saveMessage && (
+    <div className="callback-save-toast">
+        ✓ {saveMessage}
+    </div>
+)}
     </div>
         {selectedCallback && (
     <aside className="callback-panel">
@@ -404,177 +419,359 @@ return (
             Call outcome
         </span>
     
-    {!isRescheduling && !isSnoozing && ( //mostramos los botones solo si isrch es f
+    {!isRescheduling && !isSnoozing && (
+    // Mostramos los botones solo si no estamos rescheduleando ni haciendo snooze
     <div className="callback-outcomes">
+        {/* ACCEPTED */}
         <button
-        onClick={() =>{
-            if(!selectedCallback) return;
-            setSelectedCallResult("accepted");
-            }}>
+            className={
+                selectedCallResult === "accepted"
+                    ? "selected"
+                    : ""
+            }
+            onClick={() => {
+                if (!selectedCallback) return;
+
+                setSelectedCallResult("accepted");
+                console.log("ACCEPTED CLICK");
+                // Limpiamos cualquier otra acción pendiente
+                setSelectedSnoozeAt(null);
+                setSelectedSnoozeOption(null);
+                setSelectedRescheduleAt("");
+            }}
+        >
             Accepted
         </button>
 
+
+        {/* RESCHEDULE */}
         <button
-        onClick={() => setIsRescheduling(true)}>
+            className={
+                selectedCallResult === "rescheduled"
+                    ? "selected"
+                    : ""
+            }
+            onClick={() => {
+                if (!selectedCallback) return;
+
+                setIsRescheduling(true);
+
+                
+                setSelectedCallResult(null);
+                setSelectedSnoozeAt(null);
+                setSelectedSnoozeOption(null);
+                setSelectedRescheduleAt("");
+            }}
+        >
             Rescheduled
         </button>
 
+
+        {/* SNOOZE */}
         <button
-        onClick={() => setIsSnoozing(true)}>
-            
+            className={
+                selectedSnoozeAt
+                    ? "selected"
+                    : ""
+            }
+            onClick={() => {
+                if (!selectedCallback) return;
+
+                setIsSnoozing(true);
+
+                
+                setSelectedCallResult(null);
+                setSelectedRescheduleAt("");
+                setSelectedSnoozeAt(null);
+                setSelectedSnoozeOption(null);
+            }}
+        >
             Snooze
         </button>
 
+
+        {/* DECLINED */}
         <button
-            onClick={() =>{
-            if(!selectedCallback) return;
-            setSelectedCallResult("declined")}}>
+            className={
+                selectedCallResult === "declined"
+                    ? "selected"
+                    : ""
+            }
+            onClick={() => {
+                if (!selectedCallback) return;
+
+                setSelectedCallResult("declined");
+
+                
+                setSelectedSnoozeAt(null);
+                setSelectedSnoozeOption(null);
+                setSelectedRescheduleAt("");
+            }}
+        >
             Declined
         </button>
-    </div>
-    )}
-    {isSnoozing && (
 
-    <div className="callback-outcomes">
-        <button
-        onClick={() => {
-            if (!selectedCallback) return;
-            const reminderAt = new Date(
-                Date.now() + 15 * 60 * 1000
-                ).toISOString();
-
-            setSelectedSnoozeAt(reminderAt);
-        }}
-        >
-            +15 min</button>
-        <button
-        onClick={() =>{
-            if(!selectedCallback) return;
-            const reminderAt = new Date(
-                 Date.now() + 60 * 60 * 1000
-                ).toISOString();
-
-            setSelectedSnoozeAt(reminderAt);
-        }}
-        >+1 hour</button>
-        <button
-        onClick={() => {
-            if(!selectedCallback) return;
-            const reminderAt = new Date(
-                Date.now() + 3 * 60 * 60 * 1000
-                ).toISOString();
-
-            setSelectedSnoozeAt(reminderAt);
-        }}>
-            +3 hours</button>
-        
-        <button
-        onClick={() => {
-            setIsCustomSnoozing(true)
-            setCustomSnoozeHours("")
-            setCustomSnoozeMinutes("")
-    }}>
-        Custom snooze</button>
     </div>
 )}
-{isCustomSnoozing && (
-<div className="custom-snooze-duration">
-    <input
-        type="number"
-        min="0"
-        max="8"
-        placeholder="0"
-        value={customSnoozeHours}
-        onChange={(event) =>
-            setCustomSnoozeHours(event.target.value)
-        }
-    />
 
-    <span>hours</span>
 
-    <input
-        type="number"
-        min="0"
-        max="59"
-        placeholder="0"
-        value={customSnoozeMinutes}
-        onChange={(event) =>
-            setCustomSnoozeMinutes(event.target.value)
-        }
-    />
-
-    <span>minutes</span>
-
-    <button
+{/* SNOOZE */}
+{isSnoozing && (
+<div className="callback-outcomes">
+<button
+        type="button"
         onClick={() => {
+            setIsSnoozing(false);
             setIsCustomSnoozing(false);
-            setCustomSnoozeHours("");
-            setCustomSnoozeMinutes("");
+            setSelectedSnoozeAt(null);
+            setSelectedSnoozeOption(null);
         }}
     >
-        Cancel
-    </button>
+    ← Back
+</button>
 
-    <button
-        disabled={!customSnoozeHours && !customSnoozeMinutes}
-        onClick={() => {
-            const hours = Number(customSnoozeHours) || 0;
-            const minutes = Number(customSnoozeMinutes) || 0;
-
-            const totalMinutes = hours * 60 + minutes;
-
-            if (totalMinutes <= 0 || totalMinutes > 8 * 60) {
-                return;
+        {/* 15 MIN */}
+        <button
+            className={
+                selectedSnoozeOption === "15m"
+                    ? "selected"
+                    : ""
             }
+            onClick={() => {
+                if (!selectedCallback) return;
 
-            const reminderAt = new Date(
-                Date.now() + totalMinutes * 60 * 1000
-            ).toISOString();
+                const reminderAt = new Date(
+                    Date.now() + 15 * 60 * 1000
+                ).toISOString();
 
-            setSelectedSnoozeAt(reminderAt);
-
-            setIsCustomSnoozing(false);
-            setCustomSnoozeHours("");
-            setCustomSnoozeMinutes("");
-        }}
-    >
-        Set reminder
-    </button>
-</div>
-)}
-    {isRescheduling && (
-    <div>
-    <input
-        type="datetime-local"
-        value={rescheduledAt}
-        onChange={(event) =>
-        setRescheduledAt(event.target.value)
-        }
-    />
-
-    <button
-        onClick={() => {
-            setIsRescheduling(false);
-            setRescheduledAt("");
-        }}
-    >
-        Cancel
-    </button>
-
-        <button disabled={!rescheduledAt}
-        onClick={() =>
-        {if(!selectedCallback)return;
-            handleReschedule(
-                selectedCallback,
-                rescheduledAt
-            )
-        }
-        }>
-            Reschedule
+                setSelectedSnoozeAt(reminderAt);
+                setSelectedSnoozeOption("15m");
+            }}
+        >
+            +15 min
         </button>
+
+
+        {/* 1 HOUR */}
+        <button
+            className={
+                selectedSnoozeOption === "1h"
+                    ? "selected"
+                    : ""
+            }
+            onClick={() => {
+                if (!selectedCallback) return;
+
+                const reminderAt = new Date(
+                    Date.now() + 60 * 60 * 1000
+                ).toISOString();
+
+                setSelectedSnoozeAt(reminderAt);
+                setSelectedSnoozeOption("1h");
+            }}
+        >
+            +1 hour
+        </button>
+
+
+        {/* 3 HOURS */}
+        <button
+            className={
+                selectedSnoozeOption === "3h"
+                    ? "selected"
+                    : ""
+            }
+            onClick={() => {
+                if (!selectedCallback) return;
+
+                const reminderAt = new Date(
+                    Date.now() + 3 * 60 * 60 * 1000
+                ).toISOString();
+
+                setSelectedSnoozeAt(reminderAt);
+                setSelectedSnoozeOption("3h");
+            }}
+        >
+            +3 hours
+        </button>
+
+
+        {/* CUSTOM */}
+        <button
+            className={
+                selectedSnoozeOption === "custom"
+                    ? "selected"
+                    : ""
+            }
+            onClick={() => {
+                setIsCustomSnoozing(true);
+                setCustomSnoozeHours("");
+                setCustomSnoozeMinutes("");
+                setSelectedSnoozeOption(null);
+            }}
+        >
+            Custom snooze
+        </button>
+
     </div>
 )}
+
+
+{/* CUSTOM SNOOZE */}
+{isCustomSnoozing && (
+
+    <div className="custom-snooze-duration">
+
+        <input
+            type="number"
+            min="0"
+            max="8"
+            placeholder="0"
+            value={customSnoozeHours}
+            onChange={(event) =>
+                setCustomSnoozeHours(event.target.value)
+            }
+        />
+
+        <span>hours</span>
+
+
+        <input
+            type="number"
+            min="0"
+            max="59"
+            placeholder="0"
+            value={customSnoozeMinutes}
+            onChange={(event) =>
+                setCustomSnoozeMinutes(event.target.value)
+            }
+        />
+
+        <span>minutes</span>
+
+
+        {/* CANCEL */}
+        <button
+            onClick={() => {
+                setIsCustomSnoozing(false);
+                setCustomSnoozeHours("");
+                setCustomSnoozeMinutes("");
+            }}
+        >
+            Cancel
+        </button>
+
+
+        {/* SET REMINDER */}
+        <button
+            disabled={
+                !customSnoozeHours &&
+                !customSnoozeMinutes
+            }
+            onClick={() => {
+
+                const hours =
+                    Number(customSnoozeHours) || 0;
+
+                const minutes =
+                    Number(customSnoozeMinutes) || 0;
+
+                const totalMinutes =
+                    hours * 60 + minutes;
+
+
+                // Máximo 8 horas
+                if (
+                    totalMinutes <= 0 ||
+                    totalMinutes > 8 * 60
+                ) {
+                    return ;
+                }
+
+
+                const reminderAt = new Date(
+                    Date.now() +
+                    totalMinutes * 60 * 1000
+                ).toISOString();
+
+
+                setSelectedSnoozeAt(reminderAt);
+
+                // Marcamos Custom como seleccionado
+                setSelectedSnoozeOption("custom");
+
+                setIsCustomSnoozing(false);
+                setCustomSnoozeHours("");
+                setCustomSnoozeMinutes("");
+            }}
+        >
+            Set reminder
+        </button>
+
     </div>
+)}
+
+
+{/* RESCHEDULE */}
+{isRescheduling && (
+<div>
+    <button
+            type="button"
+            onClick={() => {
+                setIsRescheduling(false);
+                setRescheduledAt("");
+                setSelectedRescheduleAt("");
+                setSelectedCallResult(null);
+            }}
+        >
+            ← Back
+        </button>
+        <input
+            type="datetime-local"
+            value={rescheduledAt}
+            onChange={(event) =>
+                setRescheduledAt(event.target.value)
+            }
+        />
+
+
+        {/* CANCEL */}
+        <button
+            onClick={() => {
+                setIsRescheduling(false);
+                setRescheduledAt("");
+            }}
+        >
+            Cancel
+        </button>
+
+
+        {/* RESCHEDULE */}
+        <button
+            disabled={!rescheduledAt}
+            onClick={() => {
+
+                if (!selectedCallback) return;
+                console.log("RESCHEDULE BUTTON CLICK", {
+            rescheduledAt
+        });
+                setSelectedRescheduleAt(
+                    rescheduledAt
+                );
+
+                setSelectedCallResult(
+                    "rescheduled"
+                );
+
+                setIsRescheduling(false);
+            }}
+        >
+            Confirm reschedule
+        </button>
+
+    </div>
+)}
+</div>
             
 
 
@@ -605,12 +802,43 @@ return (
     </button>
 
         <button className="callback-panel-save"
-        onClick={() => 
-        {if(!selectedCallback)return
-            handleSaveCallbackNotes(
+        onClick={async() => 
+            
+        {if(!selectedCallback)return;
+            console.log("BEFORE SAVE:", {
+            selectedCallResult,
+            selectedSnoozeAt,
+            selectedRescheduleAt
+            });
+        const saved = await handleSaveCallback(
             selectedCallback,
-            callbackNotes
+            callbackNotes,
+            selectedCallResult,
+            selectedSnoozeAt,
+            selectedRescheduleAt
         );
+        if (!saved) return;
+
+            setSelectedCallback(null);
+
+            setSelectedCallResult(null);
+            setSelectedSnoozeAt(null);
+            setSelectedSnoozeOption(null);
+            setSelectedRescheduleAt("");
+            setIsRescheduling(false);
+            setIsSnoozing(false);
+            setIsCustomSnoozing(false);
+
+            setRescheduledAt("");
+            setCustomSnoozeHours("");
+            setCustomSnoozeMinutes("");
+            setCallbackNotes("");
+
+            setSaveMessage("Callback saved");
+
+            setTimeout(() => {
+                setSaveMessage(null);
+            }, 2000);
     }}
         >
             Save callback

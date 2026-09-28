@@ -1,15 +1,7 @@
-/* =========================
-   CALLBACKS PAGE
-========================= */
 
 .callbacks-page {
   width: 100%;
 }
-
-
-/* =========================
-   HEADER
-========================= */
 
 .callbacks-header {
   display: flex;
@@ -451,4 +443,9 @@ ACTION
   border: none;
   background: #1B2F5B;
   color: #ffffff;
+}
+.callback-outcomes button.selected {
+  border: 2px solid #1B2F5B !important;
+  background: #EAF0FA !important;
+  color: #1B2F5B !important;
 }

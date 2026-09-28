@@ -24,6 +24,7 @@ function App() {
 const [clients, setClients] = useState<ClientWithApp[]>([])
 const [clientsLoading, setClientsLoading] = useState(true) //clients "cargando"
 const [clientsError, setClientsError] = useState<string | null>(null)
+const [saveMessage, setSaveMessage] = useState<string | null>(null);
 //
 useEffect(() => {
   const loadClients = async () => {
@@ -37,7 +38,6 @@ useEffect(() => {
       setClientsError("No se pudieron cargar los clientes")
       setClientsLoading(false)
       
-
       return
     }
 
@@ -69,7 +69,7 @@ const createClientndCallbck = async (
 
   if (clientError) {
     console.log("CLIENT ERROR:", clientError)
-    return
+    return false
   }
 
   //Creamos el callback usando el id del cliente recién creado
@@ -92,7 +92,7 @@ const createClientndCallbck = async (
 
   if (callbackError) {
     console.log("CALLBACK ERROR:", callbackError)
-    return
+    return false
   }
 
   // Actualizar clientes en React
@@ -128,7 +128,7 @@ const deleteClient = async (clientToDelete: Client) => {
 
       if (error) {
           console.log(error)
-          return
+          return false
       }
 
   setClients(
@@ -165,7 +165,7 @@ const updateClient = async (updatedClient: Client) => {
 
     if(error){
       console.log(error)
-      return
+      return false
     }
 
     setClients(
@@ -212,7 +212,7 @@ useEffect(() => {
       console.log(error)
       setCallbacksError("No se pudieron cargar los callbacks")
       setCallbacksLoading(false)
-      return
+      return false
     }
 
     setCallbacks(data as CallbackWithClient[])
@@ -236,7 +236,7 @@ const handleCancel = async (callbackCancel: Callback) => {
 
   if (error) {
     console.log(error)
-    return
+    return false;
   }
 
   setCallbacks(
@@ -270,7 +270,7 @@ const handleCompleteCallback = async (
 
   if (error) {
     console.log(error)
-    return
+    return false;
   }
   //modificar el rct
   setCallbacks(
@@ -308,7 +308,7 @@ const handleReschedule = async (
       .eq("id", callbackReschedule.id);
       if(error){
         console.log(error)
-        return; //evita que se cree un nuevo cb si el cb original no pudo act
+        return false; //evita que se cree un nuevo cb si el cb original no pudo act
       }
       const { data, error: newCallbackError } = await supabase
         .from ("callbacks")
@@ -324,7 +324,7 @@ const handleReschedule = async (
 
       if (newCallbackError) {
         console.log(newCallbackError);
-        return;
+        return false;
       }
       setCallbacks(
         callbacks.map((currentCallback) => {
@@ -361,7 +361,7 @@ const handleSnooze = async (
   .eq("id", callbackSnooze.id)
   if(error){
     console.log("snooze:", error);
-    return;
+    return false;
   }
   console.log("SNOOZE UPDATED");
   setCallbacks(
@@ -394,7 +394,7 @@ const handleCustomSnooze = async (
 
   if (error) {
     console.log("CUSTOM SNOOZE ERROR:", error);
-    return;
+    return false;
   }
 
   setCallbacks(
@@ -432,7 +432,7 @@ const addCallback = async (newCallback: NewCallback) => {
 
   if (error) {
     console.log(error);
-    return;
+    return false;
   }
 
   // Buscamos la información del cliente para completar CallbackWithClient
@@ -453,7 +453,7 @@ const addCallback = async (newCallback: NewCallback) => {
 
   if (clientError) {
     console.log(clientError);
-    return;
+    return false;
   }
 
   setCallbacks([
@@ -481,7 +481,7 @@ const handleSaveCallbackNotes = async (
 
   if (error) {
     console.log("SAVE NOTES ERROR:", error)
-    return
+    return false;
   }
 
   setCallbacks(
@@ -497,6 +497,178 @@ const handleSaveCallbackNotes = async (
     })
   )
 }
+//
+const handleSaveCallback = async (
+    callback: CallbackWithClient,
+    notes: string,
+    callResult: "accepted" | "rescheduled" | "declined" | null,
+    snoozeAt: string | null,
+    rescheduleAt: string
+): Promise<boolean> => {
+
+    // Accepted / Declined
+    if (callResult === "accepted" || callResult === "declined") {
+
+        const { error } = await supabase
+            .from("callbacks")
+            .update({
+                status: "completed",
+                call_result: callResult,
+                next_reminder_at: null,
+                notes: notes || null
+            })
+            .eq("id", callback.id);
+
+        if (error) {
+            console.log("SAVE CALLBACK ERROR:", error);
+            return false;
+        }
+
+        setCallbacks(
+            callbacks.map((currentCallback) => {
+
+                if (currentCallback.id === callback.id) {
+                    return {
+                        ...currentCallback,
+                        status: "completed",
+                        call_result: callResult,
+                        next_reminder_at: null,
+                        notes: notes || null
+                    };
+                }
+
+                return currentCallback;
+            })
+        );
+
+        return true;
+    }
+
+    // Reschedule
+    if (
+        callResult === "rescheduled" &&
+        rescheduleAt
+    ) {
+
+        // Completar callback actual
+        const { error: updateError } = await supabase
+            .from("callbacks")
+            .update({
+                status: "completed",
+                call_result: "rescheduled",
+                next_reminder_at: null,
+                notes: notes || null
+            })
+            .eq("id", callback.id);
+
+        if (updateError) {
+            console.log(
+                "RESCHEDULE UPDATE ERROR:",
+                updateError
+            );
+            return false;
+        }
+
+        // Crear nuevo callback
+        const { data: newCallback, error: insertError } =
+            await supabase
+                .from("callbacks")
+                .insert({
+                    client_id: callback.client_id,
+                    scheduled_at: new Date(
+                        rescheduleAt
+                    ).toISOString(),
+                    status: "pending",
+                    notes: null,
+                    call_result: null,
+                    next_reminder_at: null
+                })
+                .select(`
+                    *,
+                    clientes (
+                        id,
+                        name,
+                        phone
+                    )
+                `)
+                .single();
+
+        if (insertError) {
+            console.log(
+                "RESCHEDULE INSERT ERROR:",
+                insertError
+            );
+            return false;
+        }
+
+        // Actualizar estado local
+        setCallbacks(
+            callbacks
+                .map((currentCallback) => {
+
+                    if (currentCallback.id === callback.id) {
+                        return {
+                            ...currentCallback,
+                            status: "completed" as const,
+                            call_result: "rescheduled" as const,
+                            next_reminder_at: null,
+                            notes: notes || null
+                        };
+                    }
+
+                    return currentCallback;
+                })
+                .concat(newCallback as CallbackWithClient)
+        );
+
+        return true;
+    }
+
+    // Snooze
+    if (snoozeAt) {
+
+        const { error } = await supabase
+            .from("callbacks")
+            .update({
+                next_reminder_at: snoozeAt,
+                notes: notes || null
+            })
+            .eq("id", callback.id);
+
+        if (error) {
+            console.log(
+                "SNOOZE CALLBACK ERROR:",
+                error
+            );
+            return false;
+        }
+
+        setCallbacks(
+            callbacks.map((currentCallback) => {
+
+                if (currentCallback.id === callback.id) {
+                    return {
+                        ...currentCallback,
+                        next_reminder_at: snoozeAt,
+                        notes: notes || null
+                    };
+                }
+
+                return currentCallback;
+            })
+        );
+
+        return true; 
+    }
+    console.log("SAVE DEBUG:", {
+    callResult,
+    snoozeAt,
+    rescheduleAt
+});
+
+    console.log("NO CALLBACK ACTION SELECTED");
+    return false
+};
 
   return (
     <>
@@ -567,6 +739,7 @@ const handleSaveCallbackNotes = async (
               handleSnooze={handleSnooze}
               handleCustomSnooze={handleCustomSnooze}
               handleSaveCallbackNotes={handleSaveCallbackNotes}
+              handleSaveCallback={handleSaveCallback}
             />
           </>
           }
