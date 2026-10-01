@@ -18,15 +18,55 @@ import type {
   CallbackWithClient
 } from "./types";
 import { supabase } from "./lib/supabase";
+import Login from "./components/Login";
 
 function App() {
 //refactori
+const [session, setSession] = useState<any>(null);
+const [authLoading, setAuthLoading] = useState(true);
+
 const [clients, setClients] = useState<ClientWithApp[]>([])
 const [clientsLoading, setClientsLoading] = useState(true) //clients "cargando"
 const [clientsError, setClientsError] = useState<string | null>(null)
 const [saveMessage, setSaveMessage] = useState<string | null>(null);
+useEffect(() => {
+  const getToken = async () => {
+    const { data } = await supabase.auth.getSession();
+
+    console.log("ACCESS TOKEN:", data.session?.access_token);
+  };
+
+  getToken();
+}, []);
+
+useEffect(() => {
+  const getSession = async () => {
+    const { data } = await supabase.auth.getSession();
+
+    setSession(data.session);
+    setAuthLoading(false);
+    
+
+  };
+  
+
+  getSession();
+
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    setSession(session);
+  });
+  
+  return () => {
+    
+    subscription.unsubscribe();
+  };
+}, []);
+
 //
 useEffect(() => {
+  if (!session) return;
   const loadClients = async () => {
     const { data, error } = await supabase
       .from("clientes")
@@ -49,7 +89,7 @@ useEffect(() => {
   }
 
   loadClients()
-}, [])
+}, [session])
 
 //async porq esperamos que se comunique con SB
 const createClientndCallbck = async (
@@ -59,11 +99,21 @@ const createClientndCallbck = async (
     notes?: string
   }
 ) => {
+  // Usuario actualmente autenticado
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    console.log("No authenticated user")
+    return false
+  }
+
 
   //Creamos el cliente
   const { data: clientData, error: clientError } = await supabase
     .from("clientes")
-    .insert(newClient)
+    .insert({...newClient, user_id: user.id})
     .select()
     .single()
 
@@ -155,7 +205,12 @@ const startCallback = (client: Client) => {
 const updateClient = async (updatedClient: Client) => {
     const { data,error } = await supabase
     .from ("clientes")
-    .update(updatedClient)
+    .update({
+      name: updatedClient.name,
+      phone: updatedClient.phone,
+      source: updatedClient.source,
+      active: updatedClient.active,
+    })
     .eq("id", updatedClient.id)
     .select()
     .single()
@@ -180,6 +235,7 @@ const updateClient = async (updatedClient: Client) => {
         return currentClient
       })
     )
+    return true;
 }
 
 
@@ -190,6 +246,7 @@ const [callbacksError, setCallbacksError] = useState<string | null>(null)
 
 useEffect(() => {
   const loadCallbacks = async () => {
+    if (!session) return;
     setCallbacksLoading(true)
     const { data, error } = await supabase
       .from("callbacks")
@@ -222,7 +279,7 @@ useEffect(() => {
   }
 
   loadCallbacks()
-}, [])
+}, [session])
 
 //actualiza el estado del callback en Supabase
 const handleCancel = async (callbackCancel: Callback) => {
@@ -669,9 +726,15 @@ const handleSaveCallback = async (
     console.log("NO CALLBACK ACTION SELECTED");
     return false
 };
-
+  if (authLoading) {
+  return <p>Cargando...</p>;
+}
+if (!session) {
+  return <Login />;
+}
   return (
     <>
+    
       <Routes>
         <Route element={<MainLayout />}>
 

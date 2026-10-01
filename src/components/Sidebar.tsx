@@ -1,4 +1,5 @@
-import { NavLink } from "react-router-dom"
+import { data, NavLink } from "react-router-dom"
+import { supabase } from "../lib/supabase";
 
 function Sidebar() {
     return(
@@ -18,10 +19,13 @@ function Sidebar() {
             </nav>
 
             <div className="sidebar-user">
-                <span>EV</span>
+                <span>DG</span>
                 <div>
-                    <strong>Dr. Elena Vance</strong>
+                    <strong>Daniel</strong>
                     <small>Care Coordinator</small>
+                    <button onClick={() => supabase.auth.signOut()}>
+                    LogOut
+                </button>
                 </div>
             </div>
 
