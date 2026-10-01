@@ -2,37 +2,40 @@ import { useState } from "react"
 import { useEffect } from "react"
 import type { Client, NewClient } from "../types"
 import { supabase } from "../lib/supabase"
-import { data } from "react-router-dom"
 import "../styles/ClientForm.css"
 
 function ClientForm(
-    {onCreateClientndCallbck, editingClient, onUpdateClient}: {
-    onCreateClientndCallbck: (
-        cliente: NewClient,
-        callback: {
-        scheduled_at: string
-        notes?: string
-    }
-) => void
+    {
+        onCreateClientndCallbck,
+        editingClient,
+        onUpdateClient
+    }: {
+        onCreateClientndCallbck: (
+            cliente: NewClient,
+            callback: {
+                scheduled_at: string
+                notes?: string
+            }
+        ) => void
         editingClient: Client | null
         onUpdateClient: (cliente: Client) => void
     }
-){
-    const [name, setName] = useState("");
-    const [phone, setPhone] = useState("");
+) {
+    const [name, setName] = useState("")
+    const [phone, setPhone] = useState("")
     const [apps, setApps] = useState<{ id: string; name: string }[]>([])
-    const [source, setSource] = useState("");
+    const [source, setSource] = useState("")
 
-    const[scheduledAt, setScheduledAt] = useState("")
-    const[notes, setNotes] = useState("")
+    const [scheduledAt, setScheduledAt] = useState("")
+    const [notes, setNotes] = useState("")
+
+    const [error, setError] = useState("")
 
     useEffect(() => {
         const loadApps = async () => {
-            const {data} = await supabase
+            const { data } = await supabase
                 .from("apps")
                 .select("*")
-
-            console.log("Apps:", data)
 
             if (data) {
                 setApps(data)
@@ -40,21 +43,18 @@ function ClientForm(
         }
 
         loadApps()
-    },[])
+    }, [])
 
     useEffect(() => {
-        console.log(editingClient)
-
         if (editingClient) {
             setName(editingClient.name)
             setPhone(editingClient.phone)
             setSource(editingClient.source)
         }
     }, [editingClient])
-        
 
     return (
-    <section className="client-form-card">
+        <section className="client-form-card">
 
             <div className="client-form-header">
                 <div>
@@ -81,7 +81,10 @@ function ClientForm(
                     <input
                         type="text"
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={(e) => {
+                            setName(e.target.value)
+                            setError("")
+                        }}
                         placeholder="e.g. Carlos Rodríguez"
                     />
                 </label>
@@ -91,7 +94,10 @@ function ClientForm(
                     <input
                         type="text"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e) => {
+                            setPhone(e.target.value)
+                            setError("")
+                        }}
                         placeholder="e.g. +57 300 123 4567"
                     />
                 </label>
@@ -100,7 +106,10 @@ function ClientForm(
                     App / Source
                     <select
                         value={source}
-                        onChange={(e) => setSource(e.target.value)}
+                        onChange={(e) => {
+                            setSource(e.target.value)
+                            setError("")
+                        }}
                     >
                         <option value="">Select app</option>
 
@@ -130,7 +139,10 @@ function ClientForm(
                     <input
                         type="datetime-local"
                         value={scheduledAt}
-                        onChange={(e) => setScheduledAt(e.target.value)}
+                        onChange={(e) => {
+                            setScheduledAt(e.target.value)
+                            setError("")
+                        }}
                     />
                 </label>
 
@@ -145,23 +157,45 @@ function ClientForm(
 
             </div>
 
+            {error && (
+                <p className="client-form-error">
+                    {error}
+                </p>
+            )}
+
             <button
                 type="button"
                 className="client-form-submit"
                 onClick={() => {
 
-                    const client = {
-                        name,
-                        phone,
-                        source
+                    if (!name.trim()) {
+                        setError("Name is required")
+                        return
                     }
+
+                    if (!phone.trim()) {
+                        setError("Phone number is required")
+                        return
+                    }
+
+                    if (!source) {
+                        setError("Please select an app")
+                        return
+                    }
+
+                    if (!editingClient && !scheduledAt) {
+                        setError("Callback date and time are required")
+                        return
+                    }
+
+                    setError("")
 
                     if (editingClient) {
 
                         const updatedClient = {
                             id: editingClient.id,
-                            name,
-                            phone,
+                            name: name.trim(),
+                            phone: phone.trim(),
                             source,
                             active: editingClient.active
                         }
@@ -169,6 +203,13 @@ function ClientForm(
                         onUpdateClient(updatedClient)
 
                     } else {
+
+                        const client = {
+                            name: name.trim(),
+                            phone: phone.trim(),
+                            source
+                        }
+
                         onCreateClientndCallbck(
                             client,
                             {
@@ -176,7 +217,6 @@ function ClientForm(
                                 notes: notes || undefined
                             }
                         )
-
                     }
                 }}
             >
