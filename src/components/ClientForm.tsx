@@ -94,6 +94,7 @@ function ClientForm(
                     <input
                         type="text"
                         value={phone}
+                         //obtenemos lo que el usuario escribe en tiempo real(onChange)
                         onChange={(e) => {
                             setPhone(e.target.value)
                             setError("")
