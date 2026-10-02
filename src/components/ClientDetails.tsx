@@ -5,12 +5,10 @@ function ClientDetails({
     client,
     callbacks,
     onClose,
-    onCallbackClient
 }: {
     client: ClientWithApp
     callbacks: CallbackWithClient[]
     onClose: () => void
-    onCallbackClient: (client: ClientWithApp) => void
 }) {
     const clientCallbacks = callbacks
         .filter((callback) => callback.client_id === client.id)

@@ -159,7 +159,13 @@ function App() {
         ...newClient,
         user_id: user.id,
       })
-      .select()
+      .select(`
+        *,
+        apps (
+            id,
+            name
+        )
+    `)
       .single();
 
     if (clientError) {
@@ -188,12 +194,10 @@ function App() {
     // Actualizamos el estado local para que la interfaz refleje
     // los nuevos registros sin tener que recargar toda la página.
     setClients((currentClients) => [
-      ...currentClients,
-      {
-        ...clientData,
-        apps: null,
-      },
-    ]);
+      ...currentClients,{
+          ...clientData,
+        apps: clientData.apps ?? null,
+    }]);
 
     setCallbacks((currentCallbacks) => [
       ...currentCallbacks,
@@ -204,7 +208,7 @@ function App() {
           name: clientData.name,
           phone: clientData.phone,
           source: clientData.source,
-          apps: null,
+          apps: clientData.apps,
         },
       },
     ]);

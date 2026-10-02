@@ -1,4 +1,3 @@
-
 .callbacks-page {
   width: 100%;
 }
@@ -88,7 +87,7 @@
 
 .callbacks-list-header {
   display: grid;
-  grid-template-columns: 2fr 1.2fr 1fr 1fr 70px;
+  grid-template-columns: 2fr 1.2fr 1fr 1fr 90px 50px;
   align-items: center;
   padding: 18px 24px;
   border-bottom: 1px solid #eef0f3;
@@ -148,13 +147,13 @@
 ========================= */
 
 .callback-row {
-  display: grid;
-  grid-template-columns: 2fr 1.2fr 1fr 1fr 70px;
-  align-items: center;
-  min-height: 82px;
-  padding: 12px 24px;
-  border-bottom: 1px solid #f0f1f3;
-  transition: background 0.2s ease;
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1fr 1fr 90px 50px;
+    align-items: center;
+    min-height: 82px;
+    padding: 12px 24px;
+    border-bottom: 1px solid #f0f1f3;
+    transition: background 0.2s ease;
 }
 
 .callback-row:last-child {
@@ -448,4 +447,78 @@ ACTION
   border: 2px solid #1B2F5B !important;
   background: #EAF0FA !important;
   color: #1B2F5B !important;
+}
+.callback-save-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(15, 23, 42, 0.18);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    animation: callback-save-overlay-in 0.2s ease-out;
+}
+
+.callback-save-card {
+    width: min(340px, calc(100% - 40px));
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    box-shadow: 0 24px 60px rgba(27, 47, 91, 0.16);
+    animation: callback-save-card-in 0.22s ease-out;
+}
+
+.callback-save-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #eef5ee;
+    color: #2f7d46;
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.callback-save-card strong {
+    color: #1B2F5B;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.callback-save-card span {
+    margin-top: 6px;
+    color: #7b8494;
+    font-size: 13px;
+}
+
+@keyframes callback-save-overlay-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes callback-save-card-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }

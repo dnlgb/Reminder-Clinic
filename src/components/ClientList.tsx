@@ -6,13 +6,11 @@ function ClientList({
     clients,
     onEditClient,
     onDeleteClient,
-    onCallbackClient,
     onSelectClient
         }: {
         clients: ClientWithApp[]
         onDeleteClient: (client: ClientWithApp) => void
         onEditClient: (client: ClientWithApp) => void
-        onCallbackClient: (client: ClientWithApp) => void
         onSelectClient: (client: ClientWithApp) => void
 })
 {

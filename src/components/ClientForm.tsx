@@ -16,9 +16,9 @@ function ClientForm(
                 scheduled_at: string
                 notes?: string
             }
-        ) => void
+        ) => Promise<boolean>
         editingClient: Client | null
-        onUpdateClient: (cliente: Client) => void
+        onUpdateClient: (cliente: Client) => Promise <boolean>
     }
 ) {
     const [name, setName] = useState("")
@@ -30,6 +30,8 @@ function ClientForm(
     const [notes, setNotes] = useState("")
 
     const [error, setError] = useState("")
+    const [isSaving, setIsSaving] = useState(false)
+    const [showSuccess, setShowSuccess] = useState(false)
 
     useEffect(() => {
         const loadApps = async () => {
@@ -166,65 +168,97 @@ function ClientForm(
 
             <button
                 type="button"
-                className="client-form-submit"
-                onClick={() => {
+    className="client-form-submit"
+    disabled={isSaving}
+    onClick={async () => {
 
-                    if (!name.trim()) {
-                        setError("Name is required")
-                        return
-                    }
+        if (isSaving) return
 
-                    if (!phone.trim()) {
-                        setError("Phone number is required")
-                        return
-                    }
+        if (!name.trim()) {
+            setError("Name is required")
+            return
+        }
 
-                    if (!source) {
-                        setError("Please select an app")
-                        return
-                    }
+        if (!phone.trim()) {
+            setError("Phone number is required")
+            return
+        }
 
-                    if (!editingClient && !scheduledAt) {
-                        setError("Callback date and time are required")
-                        return
-                    }
+        if (!source) {
+            setError("Please select an app")
+            return
+        }
 
-                    setError("")
+        if (!editingClient && !scheduledAt) {
+            setError("Callback date and time are required")
+            return
+        }
 
-                    if (editingClient) {
+        setError("")
+        setIsSaving(true)
 
-                        const updatedClient = {
-                            id: editingClient.id,
-                            name: name.trim(),
-                            phone: phone.trim(),
-                            source,
-                            active: editingClient.active
-                        }
+        try {
 
-                        onUpdateClient(updatedClient)
+            if (editingClient) {
 
-                    } else {
-
-                        const client = {
-                            name: name.trim(),
-                            phone: phone.trim(),
-                            source
-                        }
-
-                        onCreateClientndCallbck(
-                            client,
-                            {
-                                scheduled_at: scheduledAt,
-                                notes: notes || undefined
-                            }
-                        )
-                    }
-                }}
-            >
-                {editingClient
-                    ? "Save changes"
-                    : "Create client & callback"
+                const updatedClient = {
+                    id: editingClient.id,
+                    name: name.trim(),
+                    phone: phone.trim(),
+                    source,
+                    active: editingClient.active
                 }
+
+                const success = await onUpdateClient(updatedClient)
+
+                if (success !== false) {
+                    setShowSuccess(true)
+                }
+
+            } else {
+
+                const client = {
+                    name: name.trim(),
+                    phone: phone.trim(),
+                    source
+                }
+
+                const success = await onCreateClientndCallbck(
+                    client,
+                    {
+                        scheduled_at: scheduledAt,
+                        notes: notes || undefined
+                    }
+                )
+
+                if (success) {
+                    setShowSuccess(true)
+
+                    setName("")
+                    setPhone("")
+                    setSource("")
+                    setScheduledAt("")
+                    setNotes("")
+                }
+            }
+
+        } catch (error) {
+
+            console.log(error)
+            setError("Something went wrong while saving")
+
+        } finally {
+
+            setIsSaving(false)
+        }
+    }}
+>
+    {isSaving
+        ? "Saving..."
+        : editingClient
+            ? "Save changes"
+            : "Create client & callback"
+    }
             </button>
 
         </section>

@@ -292,6 +292,16 @@ return (
 
     {sortedDayCallbacks.map((callback) => {
         const client = callback.clientes;
+        const statusLabel =
+            callback.status === "completed"
+                ? callback.call_result === "accepted"
+                    ? "Accepted"
+                    : callback.call_result === "declined"
+                        ? "Declined"
+                        : callback.call_result === "rescheduled"
+                            ? "Rescheduled"
+                            : "Completed"
+                : callback.status;
     return (
         <div
             className="callback-row"
@@ -327,7 +337,7 @@ return (
             </div>
 
             <span className="callback-status">
-                {callback.status}
+                {statusLabel}
             </span>
 
             <div className="callback-actions">
@@ -348,12 +358,19 @@ return (
         </div>//cbdategroup
     );})
 )}
-{saveMessage && (
-    <div className="callback-save-toast">
-        ✓ {saveMessage}
+    </div>
+    {saveMessage && (
+    <div className="callback-save-overlay">
+        <div className="callback-save-card">
+            <div className="callback-save-icon">✓</div>
+
+            <strong>{saveMessage}</strong>
+
+            <span>The callback was saved successfully.</span>
+        </div>
     </div>
 )}
-    </div>
+
         {selectedCallback && (
     <aside className="callback-panel">
 
@@ -417,7 +434,7 @@ return (
         </button>
 
 
-        {/* RESCHEDULE */}
+        {/* Reschedule*/}
         <button
             className={
                 selectedCallResult === "rescheduled"
@@ -440,7 +457,7 @@ return (
         </button>
 
 
-        {/* SNOOZE */}
+        {/* Snooze */}
         <button
             className={
                 selectedSnoozeAt
@@ -463,7 +480,7 @@ return (
         </button>
 
 
-        {/* DECLINED */}
+        {/* Declined */}
         <button
             className={
                 selectedCallResult === "declined"
@@ -488,7 +505,7 @@ return (
 )}
 
 
-{/* SNOOZE */}
+{/* Snooze */}
 {isSnoozing && (
 <div className="callback-outcomes">
 <button
@@ -503,7 +520,7 @@ return (
     ← Back
 </button>
 
-        {/* 15 MIN */}
+        {/* 15 Min */}
         <button
             className={
                 selectedSnoozeOption === "15m"
@@ -525,7 +542,7 @@ return (
         </button>
 
 
-        {/* 1 HOUR */}
+        {/* 1 Hr */}
         <button
             className={
                 selectedSnoozeOption === "1h"
@@ -547,7 +564,7 @@ return (
         </button>
 
 
-        {/* 3 HOURS */}
+        {/* 3 Hrs */}
         <button
             className={
                 selectedSnoozeOption === "3h"
