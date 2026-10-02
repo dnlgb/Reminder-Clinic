@@ -4,39 +4,14 @@ import "../Styles/Callbacks.css"
 
 function Callbacks({
     callbacks,
-    handleCancel,
-    handleCompleteCallback,
-    handleReschedule,
-    handleSnooze,
-    handleCustomSnooze,
     callbacksLoading,
     callbacksError,
-    handleSaveCallbackNotes,
-    handleSaveCallback
+    handleSaveCallback,
 }: {
     callbacks: CallbackWithClient[];
-    handleCancel: (callback: CallbackWithClient) => void;
-    handleCompleteCallback: (
-    callback: CallbackWithClient,
-    callResult: "accepted" | "declined"
-) => void;
-handleReschedule: (
-    callback: CallbackWithClient,
-    newScheduledAt: string) => void;
-handleSnooze:(
-    callback: CallbackWithClient,
-    minutes: number
-) => void
-handleCustomSnooze: (
-    callback: CallbackWithClient,
-    customReminderAt: string
-) => void;
-callbacksLoading: boolean
-callbacksError: string | null
-handleSaveCallbackNotes: (
-    callback: CallbackWithClient,
-    notes: string
-) => void
+    callbacksLoading: boolean;
+    callbacksError: string | null;
+
 handleSaveCallback: (
     callback: CallbackWithClient,
     notes: string,
@@ -44,9 +19,7 @@ handleSaveCallback: (
     snoozeAt: string | null,
     rescheduleAt: string
 ) => Promise<boolean>;
-
 }) 
-
 {
 
 const [search, setSearch] = useState("");
@@ -851,4 +824,4 @@ return (
 );
 }
 
-export default Callbacks;
+export default Callbacks
