@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import MainLayout from "./layouts/MainLayout";
 import "./styles/App.css";
 
-import { Route, Routes } from "react-router-dom";
+import { Form, Route, Routes } from "react-router-dom";
 
 import ClientList from "./components/ClientList";
 import ClientForm from "./components/ClientForm";
@@ -279,6 +279,26 @@ function App() {
 
     return true;
   };
+  
+  const deleteCallback = async (callback: CallbackWithClient) => {
+        const {error} = await supabase
+          .from("callbacks")
+          .delete()
+          .eq("id", callback.id)
+
+        if(error) {
+          console.log(error)
+          return false
+        }
+
+        setCallbacks((currentCallbacks) =>
+          currentCallbacks.filter(
+            (currentCallback) => currentCallback.id !== callback.id
+        )
+    )
+
+    return true
+  }
 
 
   // Maneja las diferentes acciones que pueden ocurrir al guardar un callback:
@@ -496,6 +516,7 @@ function App() {
               callbacks={callbacks}
               callbacksLoading={callbacksLoading}
               callbacksError={callbacksError}
+              deleteCallback={deleteCallback}
               handleSaveCallback={handleSaveCallback}
             />
           }

@@ -1,16 +1,22 @@
 import { useState } from "react";
-import type { CallbackWithClient } from "../types";
+import type { Callback, CallbackWithClient } from "../types";
 import "../Styles/Callbacks.css"
 
 function Callbacks({
     callbacks,
     callbacksLoading,
     callbacksError,
+    deleteCallback,
     handleSaveCallback,
+
 }: {
     callbacks: CallbackWithClient[];
     callbacksLoading: boolean;
     callbacksError: string | null;
+
+    deleteCallback: (
+        callback: CallbackWithClient
+    ) => Promise <boolean>
 
 handleSaveCallback: (
     callback: CallbackWithClient,
@@ -34,6 +40,7 @@ const [callbackNotes, setCallbackNotes] = useState("");
 const [selectedSnoozeOption, setSelectedSnoozeOption] =
     useState<"15m" | "1h" | "3h" | "custom" | null>(null);
 const [saveMessage, setSaveMessage] = useState<string | null>(null);
+const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
 const [selectedCallResult, setSelectedCallResult] =
     useState<"accepted" | "rescheduled" |"declined" | null>(null);
@@ -724,7 +731,6 @@ return (
             }
         />
 
-
         {/* CANCEL */}
         <button
             onClick={() => {
@@ -782,6 +788,12 @@ return (
         }
     />
     </div>
+    <button
+    className="callback-panel-delete"
+    onClick={() => setShowDeleteConfirm(true)}
+>
+    Delete callback
+</button>
 
     <div className="callback-panel-actions">
     <button
@@ -834,8 +846,43 @@ return (
             Save callback
         </button>
     </div>
+    {showDeleteConfirm && (
+    <div className="callback-delete-overlay">
+        <div className="callback-delete-card">
+            <strong>Delete callback?</strong>
+
+            <span>
+                This action cannot be undone.
+            </span>
+
+            <div className="callback-delete-actions">
+                <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                >
+                    Cancel xdd
+                </button>
+
+                <button
+                    onClick={async () => {
+                        if (!selectedCallback) return;
+
+                        const deleted = await deleteCallback(selectedCallback);
+
+                        if (!deleted) return;
+
+                        setShowDeleteConfirm(false);
+                        setSelectedCallback(null);
+                    }}
+                >
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+)}
 
     </aside>
+    
 )}
     </section>
 );
