@@ -17,8 +17,22 @@ function ClientForm(
                 notes?: string
             }
         ) => Promise<boolean>
-        editingClient: Client | null
-        onUpdateClient: (cliente: Client) => Promise <boolean>
+        editingClient:{
+                client: Client
+                callback: {
+                    id: string
+                    scheduled_at: string
+                    notes: string | null
+                } | null
+            } | null
+        onUpdateClient: (data: {
+            client: Client
+                callback: {
+                    id: string
+                    scheduled_at: string
+                    notes: string | null
+                } | null
+            }) => Promise<boolean>
     }
 ) {
     const [name, setName] = useState("")
@@ -57,11 +71,27 @@ function ClientForm(
 
     useEffect(() => {
         if (editingClient) {
-            setName(editingClient.name)
-            setPhone(editingClient.phone)
-            setSource(editingClient.source)
+        setName(editingClient.client.name)
+        setPhone(editingClient.client.phone)
+        setSource(editingClient.client.source)
+
+        if (editingClient.callback) {
+            const date = new Date(editingClient.callback.scheduled_at)
+
+            const localDate = new Date(
+                date.getTime() - date.getTimezoneOffset() * 60000
+            )
+                .toISOString()
+                .slice(0, 16)
+
+            setScheduledAt(localDate)
+            setNotes(editingClient.callback.notes ?? "")
+        } else {
+            setScheduledAt("")
+            setNotes("")
         }
-    }, [editingClient])
+    }
+}, [editingClient])
 
     return (
         <section className="client-form-card">
@@ -208,58 +238,62 @@ function ClientForm(
         try {
 
             if (editingClient) {
-
-                const updatedClient = {
-                    id: editingClient.id,
-                    name: name.trim(),
-                    phone: phone.trim(),
-                    source,
-                    active: editingClient.active
-                }
-
-                const success = await onUpdateClient(updatedClient)
-
-                if (success !== false) {
-                    showSavedMessage()
-                }
-
-            } else {
-
-                const client = {
-                    name: name.trim(),
-                    phone: phone.trim(),
-                    source
-                }
-
-                const success = await onCreateClientndCallbck(
-                    client,
-                    {
-                        scheduled_at: scheduledAt,
-                        notes: notes || undefined
-                    }
-                )
-
-                if (success) {
-                    showSavedMessage()
-
-                    setName("")
-                    setPhone("")
-                    setSource("")
-                    setScheduledAt("")
-                    setNotes("")
-                }
+    const updatedClient = {
+        client: {
+            id: editingClient.client.id,
+            name: name.trim(),
+            phone: phone.trim(),
+            source,
+            active: editingClient.client.active
+        },
+        callback: editingClient.callback
+            ? {
+                id: editingClient.callback.id,
+                scheduled_at: scheduledAt,
+                notes: notes || null
             }
+            : null
+    }
 
-        } catch (error) {
+    const success = await onUpdateClient(updatedClient)
 
-            console.log(error)
-            setError("Something went wrong while saving")
+    if (success !== false) {
+        showSavedMessage()
+    }
 
-        } finally {
+} else {
+    const client = {
+        name: name.trim(),
+        phone: phone.trim(),
+        source
+    }
 
-            setIsSaving(false)
+    const success = await onCreateClientndCallbck(
+        client,
+        {
+            scheduled_at: scheduledAt,
+            notes: notes || undefined
         }
-    }}
+    )
+
+    if (success) {
+        showSavedMessage()
+
+        setName("")
+        setPhone("")
+        setSource("")
+        setScheduledAt("")
+        setNotes("")
+    }
+}
+
+} catch (error) {
+    console.log(error)
+    setError("Something went wrong while saving")
+} finally {
+    setIsSaving(false)
+}
+}}
 >
     {isSaving
         ? "Saving..."
@@ -267,8 +301,9 @@ function ClientForm(
             ? "Save changes"
             : "Create client & callback"
     }
-            </button>
-            {showSuccess && (
+</button>
+
+{showSuccess && (
     <div className="client-save-overlay">
         <div className="client-save-card">
             <div className="client-save-icon">✓</div>
@@ -287,8 +322,8 @@ function ClientForm(
     </div>
 )}
 
-        </section>
-    )
+</section>
+)
 }
 
 export default ClientForm

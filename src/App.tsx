@@ -30,7 +30,10 @@ function App() {
   const [clientsLoading, setClientsLoading] = useState(true);
   const [clientsError, setClientsError] = useState<string | null>(null);
 
-  const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [editingClient, setEditingClient] = useState<{
+    client: Client
+    callback: CallbackWithClient | null
+} | null>(null)
   
 
   const [callbacks, setCallbacks] = useState<CallbackWithClient[]>([]);
@@ -238,10 +241,21 @@ function App() {
     return true;
   };
 
-  // Guarda temporalmente el cliente que se está editando
-  // para pasarlo al formulario correspondiente.
+//ordenamos el cb de client por fecha para tomar el 1ero y edit
   const startEditing = (client: Client) => {
-    setEditingClient(client);
+    const clientCallbacks = callbacks
+        .filter((callback) => callback.client_id === client.id)
+        .filter((callback) => callback.status !== "completed")
+        .sort(
+            (a, b) =>
+                new Date(a.scheduled_at).getTime() -
+                new Date(b.scheduled_at).getTime()
+        )
+
+    setEditingClient({
+        client,
+        callback: clientCallbacks[0] ?? null
+    })
   };
 
 
@@ -250,35 +264,74 @@ function App() {
 };
   // Actualiza únicamente los campos editables del cliente.
   // No modificamos user_id, id ni otros datos controlados por la base de datos.
-  const updateClient = async (updatedClient: Client) => {
+  const updateClient = async (updatedClient: {
+    client: Client
+    callback: {
+        id: string
+        scheduled_at: string
+        notes: string | null
+    } | null
+}) => {
     const { error } = await supabase
-      .from("clientes")
-      .update({
-        name: updatedClient.name,
-        phone: updatedClient.phone,
-        source: updatedClient.source,
-        active: updatedClient.active,
-      })
-      .eq("id", updatedClient.id);
+        .from("clientes")
+        .update({
+            name: updatedClient.client.name,
+            phone: updatedClient.client.phone,
+            source: updatedClient.client.source,
+            active: updatedClient.client.active,
+        })
+        .eq("id", updatedClient.client.id)
 
     if (error) {
-      console.log(error);
-      return false;
+        console.log(error)
+        return false
+    }
+
+    if (updatedClient.callback) {
+        const { error: callbackError } = await supabase
+            .from("callbacks")
+            .update({
+                scheduled_at: new Date(
+                    updatedClient.callback.scheduled_at
+                ).toISOString(),
+                notes: updatedClient.callback.notes,
+            })
+            .eq("id", updatedClient.callback.id)
+
+        if (callbackError) {
+            console.log(callbackError)
+            return false
+        }
     }
 
     setClients((currentClients) =>
-      currentClients.map((currentClient) =>
-        currentClient.id === updatedClient.id
-          ? {
-              ...updatedClient,
-              apps: currentClient.apps,
-            }
-          : currentClient
-      )
-    );
+        currentClients.map((currentClient) =>
+            currentClient.id === updatedClient.client.id
+                ? {
+                    ...updatedClient.client,
+                    apps: currentClient.apps,
+                }
+                : currentClient
+        )
+    )
 
-    return true;
-  };
+    setCallbacks((currentCallbacks) =>
+        currentCallbacks.map((currentCallback) =>
+            updatedClient.callback &&
+            currentCallback.id === updatedClient.callback.id
+                ? {
+                    ...currentCallback,
+                    scheduled_at: new Date(
+                        updatedClient.callback.scheduled_at
+                    ).toISOString(),
+                    notes: updatedClient.callback.notes,
+                }
+                : currentCallback
+        )
+    )
+
+    return true
+}
   
   const deleteCallback = async (callback: CallbackWithClient) => {
         const {error} = await supabase
