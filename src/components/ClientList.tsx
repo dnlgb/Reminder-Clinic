@@ -6,12 +6,14 @@ function ClientList({
     clients,
     onEditClient,
     onDeleteClient,
-    onCallbackClient
+    onCallbackClient,
+    onSelectClient
         }: {
         clients: ClientWithApp[]
         onDeleteClient: (client: ClientWithApp) => void
         onEditClient: (client: ClientWithApp) => void
         onCallbackClient: (client: ClientWithApp) => void
+        onSelectClient: (client: ClientWithApp) => void
 })
 {
     const [search, setSearch] = useState("")
@@ -40,7 +42,10 @@ function ClientList({
     )
     .map((client) => (
     <li key={client.id} className="client-item">
-            <div className="client-info">
+            <div className="client-info"
+            onClick={() => {
+            console.log("CLIENTE SELECCIONADO:", client)
+            onSelectClient(client)}}>
             {`${client.name} - ${client.phone} ${client.apps?.name}`}
             </div>
         <div className="client-action">

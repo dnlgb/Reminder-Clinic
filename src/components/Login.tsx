@@ -44,7 +44,7 @@ return (
         </div>
 
         <div>
-            <label>Contraseña</label>
+            <label>Password</label>
 
         <input
             type="password"
