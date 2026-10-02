@@ -33,6 +33,14 @@ function ClientForm(
     const [isSaving, setIsSaving] = useState(false)
     const [showSuccess, setShowSuccess] = useState(false)
 
+    const showSavedMessage = () => {
+    setShowSuccess(true)
+    
+    setTimeout(() => {
+        setShowSuccess(false)
+    }, 2000)
+}
+
     useEffect(() => {
         const loadApps = async () => {
             const { data } = await supabase
@@ -212,7 +220,7 @@ function ClientForm(
                 const success = await onUpdateClient(updatedClient)
 
                 if (success !== false) {
-                    setShowSuccess(true)
+                    showSavedMessage()
                 }
 
             } else {
@@ -232,7 +240,7 @@ function ClientForm(
                 )
 
                 if (success) {
-                    setShowSuccess(true)
+                    showSavedMessage()
 
                     setName("")
                     setPhone("")
@@ -260,6 +268,24 @@ function ClientForm(
             : "Create client & callback"
     }
             </button>
+            {showSuccess && (
+    <div className="client-save-overlay">
+        <div className="client-save-card">
+            <div className="client-save-icon">✓</div>
+
+            <strong>
+                {editingClient ? "Client updated" : "Client created"}
+            </strong>
+
+            <span>
+                {editingClient
+                    ? "The client was updated successfully."
+                    : "The client and first callback were created successfully."
+                }
+            </span>
+        </div>
+    </div>
+)}
 
         </section>
     )
