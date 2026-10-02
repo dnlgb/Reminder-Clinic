@@ -9,14 +9,12 @@ import ClientList from "./components/ClientList";
 import ClientForm from "./components/ClientForm";
 import DashboardSummary from "./components/DashboardSummary";
 import Callbacks from "./pages/Callbacks";
-import CallbacksForm from "./components/CallbacksForm";
 import Login from "./components/Login";
 import ClientDetails from "./components/ClientDetails";
 
 import type {
   Client,
   Callback,
-  NewCallback,
   NewClient,
   ClientWithApp,
   CallbackWithClient,
@@ -33,7 +31,7 @@ function App() {
   const [clientsError, setClientsError] = useState<string | null>(null);
 
   const [editingClient, setEditingClient] = useState<Client | null>(null);
-  const [callbackClient, setCallbackClient] = useState<Client | null>(null);
+  
 
   const [callbacks, setCallbacks] = useState<CallbackWithClient[]>([]);
   const [callbacksLoading, setCallbacksLoading] = useState(true);
@@ -242,10 +240,6 @@ function App() {
     setEditingClient(client);
   };
 
-  // Guarda el cliente seleccionado para crearle un callback adicional.
-  const startCallback = (client: Client) => {
-    setCallbackClient(client);
-  };
 
   const selectClient = (client: ClientWithApp) => {
     setSelectedClient(client);
@@ -282,63 +276,6 @@ function App() {
     return true;
   };
 
-  // Crea un callback adicional para un cliente que ya existe.
-  const addCallback = async (newCallback: NewCallback) => {
-    const { data, error } = await supabase
-      .from("callbacks")
-      .insert({
-        ...newCallback,
-        scheduled_at: new Date(newCallback.scheduled_at).toISOString(),
-        status: "pending",
-        call_result: null,
-        next_reminder_at: null,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.log(error);
-      return false;
-    }
-
-    // Obtenemos los datos del cliente para construir
-    // el mismo formato CallbackWithClient que utiliza la interfaz.
-    const {
-      data: clientData,
-      error: clientError,
-    } = await supabase
-      .from("clientes")
-      .select(`
-        id,
-        name,
-        phone,
-        source,
-        apps (
-          id,
-          name
-        )
-      `)
-      .eq("id", newCallback.client_id)
-      .single();
-
-    if (clientError) {
-      console.log(clientError);
-      return false;
-    }
-
-    setCallbacks((currentCallbacks) => [
-      ...currentCallbacks,
-      {
-        ...(data as Callback),
-        clientes: {
-          ...clientData,
-          apps: clientData.apps[0] ?? null,
-        },
-      },
-    ]);
-
-    return true;
-  };
 
   // Maneja las diferentes acciones que pueden ocurrir al guardar un callback:
 // finalizarlo, reagendarlo o posponer su recordatorio.
@@ -499,91 +436,69 @@ function App() {
   }
 
   return (
-        <Routes>
-            <Route element={<MainLayout />}>
-                <Route
-                    path="/"
-                    element={
-                        <DashboardSummary
-                            callbacks={callbacks}
-                        />
-                    }
+    <Routes>
+      <Route element={<MainLayout />}>
+        <Route
+          path="/"
+          element={<DashboardSummary callbacks={callbacks} />}
+        />
+
+        <Route
+          path="/clients"
+          element={
+            <div className="clients-page">
+              <div className="clients-form-column">
+                
+                <ClientForm
+                  onCreateClientndCallbck={createClientndCallbck}
+                  editingClient={editingClient}
+                  onUpdateClient={updateClient}
                 />
+              </div>
 
-                <Route
-                    path="/clients"
-                    element={
-                        <>
-                            <div className="clients-page">
+              <div className="clients-list-column">
+                {clientsLoading ? (
+                  <p>Loading clients list...</p>
+                ) : clientsError ? (
+                  <p>{clientsError}</p>
+                ) : clients.length === 0 ? (
+                  <p>No clients found</p>
+                ) : (
+                  <ClientList
+                    clients={clients}
+                    onDeleteClient={deleteClient}
+                    onEditClient={startEditing}
+                    onSelectClient={selectClient}
+                  />
+                )}
+                
+                {selectedClient && (
+                  
+                    <ClientDetails
+                        client={selectedClient}
+                        callbacks={callbacks}
+                        onClose={() => setSelectedClient(null)}
+                    />
+                    )}
+              </div>
+            </div>
+          }
+        />
 
-                                <div className="clients-form-column">
-                                    <ClientForm
-                                        onCreateClientndCallbck={
-                                            createClientndCallbck
-                                        }
-                                        editingClient={editingClient}
-                                        onUpdateClient={updateClient}
-                                    />
-                                </div>
-
-                                <div className="clients-list-column">
-
-                                    {clientsLoading ? (
-                                        <p>Loading clients list...</p>
-                                    ) : clientsError ? (
-                                        <p>{clientsError}</p>
-                                    ) : clients.length === 0 ? (
-                                        <p>No clients found</p>
-                                    ) : (
-                                        <ClientList
-                                            clients={clients}
-                                            onDeleteClient={deleteClient}
-                                            onEditClient={startEditing}
-                                            onCallbackClient={startCallback}
-                                            onSelectClient={selectClient}
-                                        />
-                                    )}
-
-                                    {callbackClient && (
-                                        <CallbacksForm
-                                            client={callbackClient}
-                                            onAddCallback={addCallback}
-                                        />
-                                    )}
-
-                                </div>
-
-                            </div>
-
-                            {selectedClient && (
-                                <ClientDetails
-                                    client={selectedClient}
-                                    callbacks={callbacks}
-                                    onClose={() =>
-                                        setSelectedClient(null)
-                                    }
-                                    onCallbackClient={startCallback}
-                                />
-                            )}
-                        </>
-                    }
-                />
-
-                <Route
-                    path="/callbacks"
-                    element={
-                        <Callbacks
-                            callbacks={callbacks}
-                            callbacksLoading={callbacksLoading}
-                            callbacksError={callbacksError}
-                            handleSaveCallback={handleSaveCallback}
-                        />
-                    }
-                />
-            </Route>
-
-        </Routes>
-    );
+        <Route
+          path="/callbacks"
+          element={
+            <Callbacks
+              callbacks={callbacks}
+              callbacksLoading={callbacksLoading}
+              callbacksError={callbacksError}
+              handleSaveCallback={handleSaveCallback}
+            />
+          }
+        />
+      </Route>
+    </Routes>
+  );
 }
 
 export default App;

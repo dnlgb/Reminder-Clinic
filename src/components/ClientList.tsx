@@ -18,91 +18,133 @@ function ClientList({
 {
     const [search, setSearch] = useState("")
     const [openMenu, setOpenMenu] = useState<string | null>(null)
+    const [currentPage, setCurrentPage] = useState(1)
+    const clientsPerPage = 10
+
+const filteredClients = clients.filter((currentClient) =>
+    currentClient.name
+        .toLowerCase()
+        .includes(search.toLowerCase()))
+
+const totalPages = Math.ceil(
+    filteredClients.length / clientsPerPage)
+
+const startIndex = (currentPage - 1) * clientsPerPage
+const paginatedClients = filteredClients.slice(
+    startIndex,
+    startIndex + clientsPerPage)
     return (
     <section className="client-list">
         <div className="client-list-header">
             <h2>Clientes</h2>
         </div>
 
-            <input
+        <input
             className="client-search"
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+                setSearch(e.target.value)
+                setCurrentPage(1)
+            }}
             placeholder="search clients..."
-        
         />
-        
-    <ul>
-    {clients
-    .filter((currentClient) =>
-        currentClient.name
-        .toLowerCase()
-        .includes(search.toLowerCase())
-    )
-    .map((client) => (
-    <li key={client.id} className="client-item">
-            <div className="client-info"
-            onClick={() => {
-            console.log("CLIENTE SELECCIONADO:", client)
-            onSelectClient(client)}}>
-            {`${client.name} - ${client.phone} ${client.apps?.name}`}
-            </div>
-        <div className="client-action">
+
+        <ul>
+            {paginatedClients.map((client) => (
+                <li key={client.id} className="client-item">
+
+                    <div
+                        className="client-info"
+                        onClick={() => onSelectClient(client)}
+                    >
+                        {`${client.name} - ${client.phone} ${client.apps?.name}`}
+                    </div>
+
+                    <div className="client-action">
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                setOpenMenu(
+                                    openMenu === client.id
+                                        ? null
+                                        : client.id
+                                )
+                            }
+                        >
+                            ⋯
+                        </button>
+
+                        {openMenu === client.id && (
+                            <div className="client-menu">
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        onEditClient(client)
+                                        setOpenMenu(null)
+                                    }}
+                                >
+                                    Edit client
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        onDeleteClient(client)
+                                        setOpenMenu(null)
+                                    }}
+                                >
+                                    Delete client
+                                </button>
+
+                            </div>
+                        )}
+
+                    </div>
+
+                </li>
+            ))}
+        </ul>
+
+        {totalPages > 1 && (
+            <div className="client-pagination">
+
                 <button
-        type="button"
-        onClick={() =>
-            setOpenMenu(
-                openMenu === client.id
-                    ? null
-                    : client.id
-            )
-        }
-    >
-        ⋯
-    </button>
+                    type="button"
+                    disabled={currentPage === 1}
+                    onClick={() =>
+                        setCurrentPage((page) => page - 1)
+                    }
+                >
+                    ‹
+                </button>
 
-    {openMenu === client.id && (
-        <div className="client-menu">
+                <span>
+                    {startIndex + 1}-
+                    {Math.min(
+                        startIndex + clientsPerPage,
+                        filteredClients.length
+                    )}{" "}
+                    de {filteredClients.length}
+                </span>
 
-            <button
-                type="button"
-                onClick={() => {
-                    onCallbackClient(client)
-                    setOpenMenu(null)
-                }}
-            >
-                Create callback
-            </button>
+                <button
+                    type="button"
+                    disabled={currentPage === totalPages}
+                    onClick={() =>
+                        setCurrentPage((page) => page + 1)
+                    }
+                >
+                    ›
+                </button>
 
-            <button
-                type="button"
-                onClick={() => {
-                    onEditClient(client)
-                    setOpenMenu(null)
-                }}
-            >
-                Edit client
-            </button>
+            </div>
+        )}
 
-            <button
-                type="button"
-                onClick={() => {
-                    onDeleteClient(client)
-                    setOpenMenu(null)
-                }}
-            >
-                Delete client
-            </button>
-
-        </div>
-    )}
-        </div>
-    </li>
-    ))}
-</ul>
     </section>
-    )
+)
 }
 
 export default ClientList
