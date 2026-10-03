@@ -3,11 +3,9 @@ import { supabase } from "../lib/supabase";
 import esthetixDentalSidebar from "../assets/esthetixDentalSidebar.png";
 import {
     House,
-    CalendarClock,
-    UsersRound,
-    LayoutGrid,
-    UserRound,
-} from "lucide-react";
+    CalendarDots,
+    UsersThree,
+} from "@phosphor-icons/react"
 function Sidebar() {
 
     const handleLogout = async () => {
@@ -29,17 +27,17 @@ function Sidebar() {
 
             <nav className="sidebar-nav">
                 <NavLink to="/">
-                    <House size={18} strokeWidth={1.8} />
+                    <House size={20} weight="regular" />
                     <span>Home</span>
                 </NavLink>
 
                 <NavLink to="/clients">
-                    <UsersRound size={18} strokeWidth={1.8} />
+                    <UsersThree size={20} weight="regular" />
                     <span>Clients</span>
                 </NavLink>
 
                 <NavLink to="/callbacks">
-                    <CalendarClock size={18} strokeWidth={1.8} />
+                    <CalendarDots size={20} weight="regular" />
                     <span>Callbacks</span>
                 </NavLink>
             </nav>

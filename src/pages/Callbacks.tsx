@@ -3,6 +3,7 @@ import type { Callback, CallbackWithClient } from "../types";
 import "../Styles/Callbacks.css"
 import { Blobatar } from "@blobatar/react";
 import "blobatar/motion.css";
+import { Check } from "@phosphor-icons/react"
 
 function Callbacks({
     callbacks,
@@ -373,7 +374,9 @@ return (
     {saveMessage && (
     <div className="callback-save-overlay">
         <div className="callback-save-card">
-            <div className="callback-save-icon">✓</div>
+            <div className="client-save-icon">
+                <Check size={30} weight="bold" />
+            </div>
 
             <strong>{saveMessage}</strong>
 

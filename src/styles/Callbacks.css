@@ -482,10 +482,10 @@
     flex: 0 0 auto !important;
     height: 46px;
     padding: 0 18px;
-    border: 1px solid #e4b7b7;
-    border-radius: 10px;
-    background: #fff8f8;
-    color: #a33a3a;
+    border: none;
+    border-radius: 50px;
+    background: #921818b2;
+    color: #ffffff;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
@@ -541,6 +541,7 @@
 .callback-delete-actions button {
     flex: 1;
     height: 42px;
+    border: none;
     border-radius: 9px;
     font-size: 14px;
     font-weight: 600;

@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@blobatar/react": "^2.7.0",
+    "@phosphor-icons/react": "^2.1.10",
     "@supabase/supabase-js": "^2.109.0",
     "blobatar": "^2.7.0",
-    "lucide-react": "^1.50.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.3"

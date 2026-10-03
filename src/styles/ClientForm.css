@@ -1,19 +1,13 @@
-/* =========================
-   CLIENT FORM
-========================= */
+/*CLIENT FORM*/
 
 .client-form-card {
   width: 100%;
-  padding: 28px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 20px;
+  padding: 30px;
+
 }
 
 
-/* =========================
-   HEADER
-========================= */
+/*HEADER*/
 
 .client-form-header {
   margin-bottom: 30px;
@@ -33,9 +27,7 @@
 }
 
 
-/* =========================
-   FORM SECTION
-========================= */
+/*FORM SECTION*/
 
 .client-form-section {
   padding: 24px 0;
@@ -63,28 +55,26 @@
 }
 
 
-/* =========================
-   STEP NUMBER
-========================= */
+/*STEP NUMBER*/
 
 .step-number {
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: #eef2fa;
-  color: #2F4E8A;
-  font-size: 13px;
-  font-weight: 600;
+  width: auto;
+    height: auto;
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: #1769A8;
+
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
 }
 
 
-/* =========================
-   LABELS
-========================= */
+/*LABELS*/
 
 .client-form-section label {
   display: flex;
@@ -102,9 +92,7 @@
 }
 
 
-/* =========================
-   INPUTS
-========================= */
+/*INPUTS*/
 
 .client-form-section input,
 .client-form-section select,
@@ -138,25 +126,27 @@
 }
 
 
-/* =========================
-   SUBMIT
-========================= */
+/*SUBMIT*/
 
 .client-form-submit {
   width: 100%;
   height: 46px;
   margin-top: 8px;
-  border: none;
-  border-radius: 10px;
-  background: #1B2F5B;
+  border-radius: 15px;
+  background: var(--primary);
   color: #ffffff;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+
+  transition:
+        background 0.2s ease,
+        transform 0.2s ease;
 }
 
-.client-form-submit:hover {
-  background: #2F4E8A;
+  .client-form-submit:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
 }
 .client-save-overlay {
     position: fixed;
@@ -168,6 +158,23 @@
     backdrop-filter: blur(5px);
     z-index: 1000;
     animation: clientSaveFadeIn 0.2s ease;
+}
+.client-save-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: rgba(23, 105, 168, 0.08);
+    color: var(--primary);
+
+    font-size: 22px;
+    font-weight: 600;
 }
 
 .client-save-card {
@@ -183,21 +190,6 @@
     gap: 8px;
     animation: clientSaveScaleIn 0.25s ease;
 }
-
-.client-save-icon {
-    width: 52px;
-    height: 52px;
-    margin-bottom: 8px;
-    border-radius: 50%;
-    background: #eef3fb;
-    color: #1b2f5b;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 25px;
-    font-weight: 700;
-}
-
 .client-save-card strong {
     color: #1b2f5b;
     font-size: 20px;
@@ -230,3 +222,24 @@
         transform: scale(1);
     }
 }
+.client-form-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 16px 0 0;
+    padding: 10px 12px;
+    border-left: 3px solid var(--danger);
+    border-radius: 7px;
+    background: rgba(171, 16, 16, 0.865);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 40px;
+
+    animation: errorIn 0.18s ease;
+}
+
+
+
+
+

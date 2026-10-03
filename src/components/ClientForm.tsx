@@ -3,6 +3,8 @@ import { useEffect } from "react"
 import type { Client, NewClient } from "../types"
 import { supabase } from "../lib/supabase"
 import "../styles/ClientForm.css"
+import { WarningCircle } from "@phosphor-icons/react"
+import { Check } from "@phosphor-icons/react"
 
 function ClientForm(
     {
@@ -125,21 +127,23 @@ function ClientForm(
                             setName(e.target.value)
                             setError("")
                         }}
-                        placeholder="e.g. Carlos Rodríguez"
+                        placeholder="Jhon Doe"
                     />
                 </label>
 
                 <label>
                     Phone number
                     <input
-                        type="text"
+                        type="tel"
                         value={phone}
+                        maxLength={10}
                          //obtenemos lo que el usuario escribe en tiempo real(onChange)
                         onChange={(e) => {
-                            setPhone(e.target.value)
+                            const value = e.target.value.replace(/\D/g, "").slice(0, 10)
+                            setPhone(value)
                             setError("")
                         }}
-                        placeholder="e.g. +57 300 123 4567"
+                        placeholder="Phone number"
                     />
                 </label>
 
@@ -199,9 +203,15 @@ function ClientForm(
             </div>
 
             {error && (
-                <p className="client-form-error">
-                    {error}
-                </p>
+            <div className="client-form-error">
+                <div className="client-form-error-icon">
+                    <WarningCircle size={17} weight="regular" />
+                </div>
+                <div>
+                    <strong>Missing information </strong>
+                    <span>{error}</span>
+                </div>
+            </div>
             )}
 
             <button
@@ -306,7 +316,9 @@ function ClientForm(
 {showSuccess && (
     <div className="client-save-overlay">
         <div className="client-save-card">
-            <div className="client-save-icon">✓</div>
+            <div className="client-save-icon">
+                <Check size={30} weight="bold" />
+            </div>
 
             <strong>
                 {editingClient ? "Client updated" : "Client created"}

@@ -34,7 +34,8 @@ const paginatedClients = filteredClients.slice(
     return (
     <section className="client-list">
         <div className="client-list-header">
-            <h2>Clientes</h2>
+            <h2>Clients</h2>
+            
         </div>
 
         <input
