@@ -1,5 +1,8 @@
 import type { ClientWithApp, CallbackWithClient } from "../types"
 import "../styles/ClientDetails.css"
+import { Blobatar } from "@blobatar/react"
+import { useGaze } from "@blobatar/react/gaze"
+import "blobatar/gaze.css"
 
 function ClientDetails({
     client,
@@ -53,6 +56,10 @@ function ClientDetails({
 
         return `${days} days ago`
     }
+    const { ref } = useGaze({
+    travel: 3,
+    lookAt: "pointer"
+})
 
     return (
         
@@ -66,9 +73,6 @@ function ClientDetails({
                 <div className="client-details-header">
                     <div>
                         <h2>Client details</h2>
-                        <p>
-                            {client.name}
-                        </p>
                     </div>
 
                     <button
@@ -78,6 +82,17 @@ function ClientDetails({
                     >
                         ×
                     </button>
+
+                </div>
+
+                <div className="client-details-profile">
+                    <Blobatar
+                        ref={ref}
+                        name={client.id}
+                        size={150}
+                        animate="always"
+                    />
+                    <h3>{client.name}</h3>
                 </div>
 
                 <div className="client-details-info">

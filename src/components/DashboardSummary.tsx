@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import type { CallbackWithClient } from "../types"
 import "../Styles/Home.css"
 
+
 function DashboardSummary({
     callbacks
 }: {
@@ -254,6 +255,7 @@ function DashboardSummary({
                             <div className="workflow-row">
                                 <div className="workflow-label">
                                     <strong>Accepted</strong>
+                                    
 
                                     <div className="workflow-dots">
                                         {Array.from({
@@ -267,10 +269,12 @@ function DashboardSummary({
                                                 key={index}
                                             ></span>
                                         ))}
+                                        
                                     </div>
                                 </div>
 
                                 <span className="workflow-count">
+                                    
                                     {acceptedCount}
                                 </span>
                             </div>

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import type { Callback, CallbackWithClient } from "../types";
 import "../Styles/Callbacks.css"
+import { Blobatar } from "@blobatar/react";
+import "blobatar/motion.css";
 
 function Callbacks({
     callbacks,
@@ -315,9 +317,11 @@ return (
             key={callback.id}
             onClick={() => setSelectedCallback(callback)}>
             <div className="callback-client">
-                <div className="callback-client-avatar">
-                    {getInitials(client?.name ?? "—")}
-                </div>
+                <Blobatar
+                    name={client?.id ?? client?.name ?? "—"}
+                    size={45}
+                    animate="hover"
+                />
 
                 <div className="callback-client-info">
                     <strong>{client?.name ?? "—"}</strong>

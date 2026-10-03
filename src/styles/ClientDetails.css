@@ -242,3 +242,17 @@
         grid-template-columns: 1fr;
     }
 }
+.client-details-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin: 4px 0 28px;
+}
+
+.client-details-profile h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #183B5B;
+}

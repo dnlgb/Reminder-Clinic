@@ -1,6 +1,13 @@
 import { NavLink } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import esthetixDentalSidebar from "../assets/esthetixDentalSidebar.png";
+import {
+    House,
+    CalendarClock,
+    UsersRound,
+    LayoutGrid,
+    UserRound,
+} from "lucide-react";
 function Sidebar() {
 
     const handleLogout = async () => {
@@ -21,9 +28,20 @@ function Sidebar() {
             </div>
 
             <nav className="sidebar-nav">
-                <NavLink to="/">Home</NavLink>
-                <NavLink to="/clients">Clients</NavLink>
-                <NavLink to="/callbacks">Callbacks</NavLink>
+                <NavLink to="/">
+                    <House size={18} strokeWidth={1.8} />
+                    <span>Home</span>
+                </NavLink>
+
+                <NavLink to="/clients">
+                    <UsersRound size={18} strokeWidth={1.8} />
+                    <span>Clients</span>
+                </NavLink>
+
+                <NavLink to="/callbacks">
+                    <CalendarClock size={18} strokeWidth={1.8} />
+                    <span>Callbacks</span>
+                </NavLink>
             </nav>
 
             <div className="sidebar-user">
