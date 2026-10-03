@@ -1,6 +1,8 @@
 import { NavLink } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import esthetixDentalSidebar from "../assets/esthetixDentalSidebar.png";
+import { useEffect, useState } from "react";
+import { Blobatar } from "@blobatar/react"
 import {
     House,
     CalendarDots,
@@ -15,6 +17,31 @@ function Sidebar() {
             console.error("Error signing out:", error);
         }
     };
+    const [userName, setUserName] = useState("");
+    useEffect(() => {
+    const getUserProfile = async () => {
+        const {
+            data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) return;
+
+        const { data, error } = await supabase
+            .from("usuarios")
+            .select("name")
+            .eq("id", user.id)
+            .single();
+
+        if (error) {
+            console.error("Error getting user profile:", error);
+            return;
+        }
+
+        setUserName(data.name);
+    };
+
+    getUserProfile();
+}, []);
 
     return (
         <aside className="sidebar">
@@ -43,11 +70,13 @@ function Sidebar() {
             </nav>
 
             <div className="sidebar-user">
-                <span>DG</span>
+                <Blobatar
+                    name={userName}
+                    size={50}
+                />
 
                 <div>
-                    <strong>Daniel</strong>
-                    <small>Care Coordinator</small>
+                    <strong>{userName}</strong>
 
                     <button onClick={handleLogout}>
                         LogOut
