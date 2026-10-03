@@ -77,11 +77,10 @@
 }
 
 
-/*
-  List header*/
+/*List header*/
 .callbacks-list-header {
   display: grid;
-  grid-template-columns: 2fr 1.2fr 1fr 1fr 90px 50px;
+  grid-template-columns: 2fr 1.2fr 1fr 1.5fr 90px 50px;
   align-items: center;
   padding: 18px 24px;
   border-bottom: 1px solid #eef0f3;
@@ -91,10 +90,16 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
+.callback-notes {
+  min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    color: #71809a;
+    font-size: 14px;
+}
 
-
-/*
-  DATE GROUP*/
+/*DATE GROUP*/
 
 .callback-date-group {
   border-bottom: 1px solid #eef0f3;
@@ -139,7 +144,7 @@
 
 .callback-row {
     display: grid;
-    grid-template-columns: 2fr 1.2fr 1fr 1fr 90px 50px;
+    grid-template-columns: 2fr 1.2fr 1fr 1.5fr 90px 50px;
     align-items: center;
     min-height: 82px;
     padding: 12px 24px;

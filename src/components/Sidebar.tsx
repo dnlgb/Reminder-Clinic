@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { supabase } from "../lib/supabase";
-
+import esthetixDentalSidebar from "../assets/esthetixDentalSidebar.png";
 function Sidebar() {
 
     const handleLogout = async () => {
@@ -14,11 +14,10 @@ function Sidebar() {
     return (
         <aside className="sidebar">
             <div className="sidebar-brand">
-                <div className="sidebar-logo">
-                    ↪
-                </div>
-
-                <h2>Callback Clinic</h2>
+                    <img src={esthetixDentalSidebar}
+                    alt="Esthetix Dental Spa"
+                    className="sidebar-logo"
+                    />
             </div>
 
             <nav className="sidebar-nav">
