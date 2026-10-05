@@ -21,7 +21,7 @@ function Login() {
     });
 
     if (error) {
-        setError("Correo o contraseña incorrectos");
+        setError("Incorrect email or password");
         console.log("LOGIN ERROR:", error);
     }
 
@@ -68,7 +68,7 @@ return (
         {error && <p className="login-error">{error}</p>}
 
         <button className="login-submit" type="submit" disabled={loading}>
-            {loading ? "Iniciando sesión..." : "Iniciar sesión"}
+            {loading ? "Signing in..." : "Sign in"}
         </button>
     </form>
         </section>

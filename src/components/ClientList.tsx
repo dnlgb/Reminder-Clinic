@@ -126,7 +126,7 @@ const paginatedClients = filteredClients.slice(
                         startIndex + clientsPerPage,
                         filteredClients.length
                     )}{" "}
-                    de {filteredClients.length}
+                    of {filteredClients.length}
                 </span>
 
                 <button

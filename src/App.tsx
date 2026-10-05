@@ -106,7 +106,7 @@ function App() {
       if (error) {
         console.log(error);
         if (active) {
-          setClientsError("No se pudieron cargar los clientes");
+          setClientsError("Could not load clients");
           setClientsLoading(false);
         }
         return;
@@ -159,7 +159,7 @@ function App() {
       if (error) {
         console.log(error);
         if (active) {
-          setCallbacksError("No se pudieron cargar los callbacks");
+          setCallbacksError("Could not load callbacks");
           setCallbacksLoading(false);
         }
         return;
