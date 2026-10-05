@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react"
 import type { CallbackWithClient } from "../types"
 import "../Styles/Home.css"
+import { CalendarDots, Bell } from "@phosphor-icons/react"
 
 
 function DashboardSummary({
@@ -148,219 +149,290 @@ function DashboardSummary({
     return (
         <>
             <section className="dashboard-header">
-                <h2>{greeting}</h2>
-                <p>Here's what needs your attention today.</p>
+            <h2>{greeting}</h2>
+            <p>Here's what needs your attention today.</p>
+            <div className="dashboard-notifications">
+
+        <button
+            type="button"
+            className="notification-button"
+        >
+            <Bell size={21} weight="regular" />
+
+            <span className="notification-badge">
+                0
+            </span>
+        </button>
+
+        <div className="notification-panel">
+
+            <div className="notification-panel-header">
+
+                <div>
+                    <h3>Notifications</h3>
+                    <span>No new notifications</span>
+                </div>
+
+                <button type="button">
+                    Mark all as read
+                </button>
+
+            </div>
+
+            <div className="notification-panel-empty">
+
+                <Bell size={26} weight="light" />
+
+                <strong>No notifications yet</strong>
+
+                <span>
+                    You're all caught up.
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+        </section>
+
+        <section className="dashboard-main">
+
+            <section className="today-callbacks">
+                <h2>Today's callbacks</h2>
+
+                <div
+                    className={`callback-timeline ${
+                        respondedCallbacks.length === 0 &&
+                        !activeCallback &&
+                        upcomingCallbacks.length === 0
+                            ? "callback-timeline-empty"
+                            : ""
+                    }`}
+                    ref={timelineRef}
+                >
+
+                    {respondedCallbacks.length === 0 &&
+                    !activeCallback &&
+                    upcomingCallbacks.length === 0 ? (
+                        <div className="empty-callbacks">
+                            <CalendarDots
+                                size={28}
+                                weight="light"
+                            />
+
+                            <strong>
+                                No callbacks scheduled
+                            </strong>
+
+                            <span>
+                                You're all clear for today.
+                            </span>
+                        </div>
+                    ) : (
+                        <>
+                            {respondedCallbacks.map((callback) => (
+                                <div
+                                    className="timeline-item timeline-item-past"
+                                    key={callback.id}
+                                >
+                                    <span>
+                                        {formatTime(
+                                            callback.scheduled_at
+                                        )}
+                                    </span>
+
+                                    <div className="timeline-dot"></div>
+
+                                    <div className="timeline-content">
+                                        <strong>
+                                            {callback.clientes?.name}
+                                        </strong>
+
+                                        <span className="callback-status">
+                                            {callback.status}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+
+                            {activeCallback && (
+                                <div
+                                    className="timeline-item timeline-item-active"
+                                    key={activeCallback.id}
+                                    ref={activeCallbackRef}
+                                >
+                                    <span>
+                                        {formatTime(
+                                            activeCallback.scheduled_at
+                                        )}
+                                    </span>
+
+                                    <div className="timeline-dot"></div>
+
+                                    <div className="timeline-content">
+                                        <strong>
+                                            {activeCallback.clientes?.name}
+                                        </strong>
+
+                                        <span className="callback-status">
+                                            {activeCallback.status}
+                                        </span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {upcomingCallbacks.map((callback) => (
+                                <div
+                                    className={`timeline-item timeline-item-upcoming ${
+                                        callback.id === nextCallbackId
+                                            ? "timeline-item-next"
+                                            : ""
+                                    }`}
+                                    key={callback.id}
+                                >
+                                    <span>
+                                        {formatTime(
+                                            callback.scheduled_at
+                                        )}
+                                    </span>
+
+                                    <div className="timeline-dot"></div>
+
+                                    <div className="timeline-content">
+                                        <strong>
+                                            {callback.clientes?.name}
+                                        </strong>
+
+                                        <span className="callback-status">
+                                            {callback.status}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </>
+                    )}
+
+                </div>
             </section>
 
-            <section className="dashboard-main">
+            <aside className="dashboard-side">
 
-                <section className="today-callbacks">
-                    <h2>Today's callbacks</h2>
+                <div className="daily-workflow">
+                    <h2>Daily workflow</h2>
 
-                    <div
-                        className="callback-timeline"
-                        ref={timelineRef}
-                    >
+                    <span>
+                        Results from completed callbacks
+                    </span>
 
-                        {respondedCallbacks.map((callback) => (
-                            <div
-                                className="timeline-item timeline-item-past"
-                                key={callback.id}
-                            >
-                                <span>
-                                    {formatTime(callback.scheduled_at)}
-                                </span>
+                    <div className="workflow-result">
 
-                                <div className="timeline-dot"></div>
+                        <div className="workflow-row">
+                            <div className="workflow-label">
+                                <strong>Accepted</strong>
 
-                                <div className="timeline-content">
-                                    <strong>
-                                        {callback.clientes?.name}
-                                    </strong>
-
-                                    <span className="callback-status">
-                                        {callback.status}
-                                    </span>
+                                <div className="workflow-dots">
+                                    {Array.from({
+                                        length: Math.min(
+                                            acceptedCount,
+                                            4
+                                        )
+                                    }).map((_, index) => (
+                                        <span
+                                            className="accepted-dot"
+                                            key={index}
+                                        ></span>
+                                    ))}
                                 </div>
                             </div>
-                        ))}
 
-                        {activeCallback && (
-                            <div
-                                className="timeline-item timeline-item-active"
-                                key={activeCallback.id}
-                                ref={activeCallbackRef}
-                            >
-                                <span>
-                                    {formatTime(
-                                        activeCallback.scheduled_at
-                                    )}
-                                </span>
-
-                                <div className="timeline-dot"></div>
-
-                                <div className="timeline-content">
-                                    <strong>
-                                        {activeCallback.clientes?.name}
-                                    </strong>
-
-                                    <span className="callback-status">
-                                        {activeCallback.status}
-                                    </span>
-                                </div>
-                            </div>
-                        )}
-
-                        {upcomingCallbacks.map((callback) => (
-                            <div
-                                className={`timeline-item timeline-item-upcoming ${
-                                    callback.id === nextCallbackId
-                                        ? "timeline-item-next"
-                                        : ""
-                                }`}
-                                key={callback.id}
-                            >
-                                <span>
-                                    {formatTime(callback.scheduled_at)}
-                                </span>
-
-                                <div className="timeline-dot"></div>
-
-                                <div className="timeline-content">
-                                    <strong>
-                                        {callback.clientes?.name}
-                                    </strong>
-
-                                    <span className="callback-status">
-                                        {callback.status}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-
-                    </div>
-                </section>
-
-                <aside className="dashboard-side">
-
-                    <div className="daily-workflow">
-                        <h2>Daily workflow</h2>
-
-                        <span>
-                            Results from completed callbacks
-                        </span>
-
-                        <div className="workflow-result">
-
-                            <div className="workflow-row">
-                                <div className="workflow-label">
-                                    <strong>Accepted</strong>
-                                    
-
-                                    <div className="workflow-dots">
-                                        {Array.from({
-                                            length: Math.min(
-                                                acceptedCount,
-                                                4
-                                            )
-                                        }).map((_, index) => (
-                                            <span
-                                                className="accepted-dot"
-                                                key={index}
-                                            ></span>
-                                        ))}
-                                        
-                                    </div>
-                                </div>
-
-                                <span className="workflow-count">
-                                    
-                                    {acceptedCount}
-                                </span>
-                            </div>
-
-                            <div className="workflow-row">
-                                <div className="workflow-label">
-                                    <strong>Rescheduled</strong>
-
-                                    <div className="workflow-dots">
-                                        {Array.from({
-                                            length: Math.min(
-                                                rescheduledCount,
-                                                4
-                                            )
-                                        }).map((_, index) => (
-                                            <span
-                                                className="rescheduled-dot"
-                                                key={index}
-                                            ></span>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <span className="workflow-count">
-                                    {rescheduledCount}
-                                </span>
-                            </div>
-
-                            <div className="workflow-row">
-                                <div className="workflow-label">
-                                    <strong>Declined</strong>
-
-                                    <div className="workflow-dots">
-                                        {Array.from({
-                                            length: Math.min(
-                                                declinedCount,
-                                                4
-                                            )
-                                        }).map((_, index) => (
-                                            <span
-                                                className="declined-dot"
-                                                key={index}
-                                            ></span>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <span className="workflow-count">
-                                    {declinedCount}
-                                </span>
-                            </div>
-
+                            <span className="workflow-count">
+                                {acceptedCount}
+                            </span>
                         </div>
-                    </div>
 
-                    <div className="today-overview">
-                        <h2>Today's overview</h2>
+                        <div className="workflow-row">
+                            <div className="workflow-label">
+                                <strong>Rescheduled</strong>
 
-                        <div className="overview-stats">
-
-                            <div>
-                                <strong>
-                                    {todayCallbacks.length}
-                                </strong>
-
-                                <span>
-                                    Total callbacks today
-                                </span>
+                                <div className="workflow-dots">
+                                    {Array.from({
+                                        length: Math.min(
+                                            rescheduledCount,
+                                            4
+                                        )
+                                    }).map((_, index) => (
+                                        <span
+                                            className="rescheduled-dot"
+                                            key={index}
+                                        ></span>
+                                    ))}
+                                </div>
                             </div>
 
-                            <div>
-                                <strong>
-                                    {completedCount}
-                                </strong>
-
-                                <span>
-                                    Completed
-                                </span>
-                            </div>
-
+                            <span className="workflow-count">
+                                {rescheduledCount}
+                            </span>
                         </div>
+
+                        <div className="workflow-row">
+                            <div className="workflow-label">
+                                <strong>Declined</strong>
+
+                                <div className="workflow-dots">
+                                    {Array.from({
+                                        length: Math.min(
+                                            declinedCount,
+                                            4
+                                        )
+                                    }).map((_, index) => (
+                                        <span
+                                            className="declined-dot"
+                                            key={index}
+                                        ></span>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <span className="workflow-count">
+                                {declinedCount}
+                            </span>
+                        </div>
+
                     </div>
+                </div>
 
-                </aside>
+                <div className="today-overview">
+                    <h2>Today's overview</h2>
 
-            </section>
+                    <div className="overview-stats">
+
+                        <div>
+                            <strong>
+                                {todayCallbacks.length}
+                            </strong>
+
+                            <span>
+                                Total callbacks today
+                            </span>
+                        </div>
+
+                        <div>
+                            <strong>
+                                {completedCount}
+                            </strong>
+
+                            <span>
+                                Completed
+                            </span>
+                        </div>
+
+                    </div>
+                </div>
+
+            </aside>
+
+        </section>
         </>
     )
 }
