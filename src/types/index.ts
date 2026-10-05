@@ -18,6 +18,20 @@ export type Callback = {
     next_reminder_at: string | null
     created_at: string
 }
+
+export type NotificationType = "reminder" | "snooze" | "overdue"
+
+export type Notification = {
+    id: string
+    user_id: string
+    callback_id: string
+    type: NotificationType
+    title: string
+    message: string
+    read_at: string | null
+    event_key: string
+    created_at: string
+}
 export type CallbackWithClient = Callback & {
 clientes: {
     id: string

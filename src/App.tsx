@@ -11,6 +11,7 @@ import DashboardSummary from "./components/DashboardSummary";
 import Callbacks from "./pages/Callbacks";
 import Login from "./components/Login";
 import ClientDetails from "./components/ClientDetails";
+import { useNotifications } from "./hooks/useNotifications";
 
 import type {
   Client,
@@ -40,6 +41,8 @@ function App() {
   const [callbacksLoading, setCallbacksLoading] = useState(true);
   const [selectedClient, setSelectedClient] = useState<ClientWithApp | null>(null);
   const [callbacksError, setCallbacksError] = useState<string | null>(null);
+  const { notifications, unreadCount, markAsRead, markAllAsRead } =
+    useNotifications(session?.user?.id);
 
   // Obtiene la sesión actual y mantiene el estado sincronizado
   // cuando el usuario inicia o cierra sesión.
@@ -517,7 +520,15 @@ function App() {
       <Route element={<MainLayout />}>
         <Route
           path="/"
-          element={<DashboardSummary callbacks={callbacks} />}
+          element={
+            <DashboardSummary
+              callbacks={callbacks}
+              notifications={notifications}
+              unreadCount={unreadCount}
+              markAsRead={markAsRead}
+              markAllAsRead={markAllAsRead}
+            />
+          }
         />
 
         <Route

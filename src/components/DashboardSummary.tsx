@@ -1,15 +1,27 @@
 import { useEffect, useRef, useState } from "react"
 import type { CallbackWithClient } from "../types"
 import "../Styles/Home.css"
-import { CalendarDots, Bell } from "@phosphor-icons/react"
+import { CalendarDots } from "@phosphor-icons/react"
+import NotificationButton from "./NotificationButton"
+import NotificationPanel from "./NotificationPanel"
+import type { Notification } from "../types"
 
 
 function DashboardSummary({
-    callbacks
+    callbacks,
+    notifications,
+    unreadCount,
+    markAsRead,
+    markAllAsRead,
 }: {
     callbacks: CallbackWithClient[]
+    notifications: Notification[]
+    unreadCount: number
+    markAsRead: (id: string) => void
+    markAllAsRead: () => void
 }) {
     const [now, setNow] = useState(new Date())
+    const [notificationsOpen, setNotificationsOpen] = useState(false)
 
     const timelineRef = useRef<HTMLDivElement | null>(null)
     const activeCallbackRef = useRef<HTMLDivElement | null>(null)
@@ -152,48 +164,19 @@ function DashboardSummary({
             <h2>{greeting}</h2>
             <p>Here's what needs your attention today.</p>
             <div className="dashboard-notifications">
-
-        <button
-            type="button"
-            className="notification-button"
-        >
-            <Bell size={21} weight="regular" />
-
-            <span className="notification-badge">
-                0
-            </span>
-        </button>
-
-        <div className="notification-panel">
-
-            <div className="notification-panel-header">
-
-                <div>
-                    <h3>Notifications</h3>
-                    <span>No new notifications</span>
-                </div>
-
-                <button type="button">
-                    Mark all as read
-                </button>
-
+                <NotificationButton
+                    unreadCount={unreadCount}
+                    isOpen={notificationsOpen}
+                    onClick={() => setNotificationsOpen((open) => !open)}
+                />
+                {notificationsOpen && (
+                    <NotificationPanel
+                        notifications={notifications}
+                        onMarkAsRead={(id) => void markAsRead(id)}
+                        onMarkAllAsRead={() => void markAllAsRead()}
+                    />
+                )}
             </div>
-
-            <div className="notification-panel-empty">
-
-                <Bell size={26} weight="light" />
-
-                <strong>No notifications yet</strong>
-
-                <span>
-                    You're all caught up.
-                </span>
-
-            </div>
-
-        </div>
-
-    </div>
         </section>
 
         <section className="dashboard-main">

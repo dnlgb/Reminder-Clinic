@@ -622,3 +622,52 @@ margin-bottom: 0;
 
     font-size: 13px;
 }
+
+.notification-list {
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.notification-item.is-unread {
+    background: rgba(23, 105, 168, 0.05);
+}
+
+.notification-item strong {
+    color: var(--text);
+    font-size: 13px;
+}
+
+.notification-item p {
+    margin: 5px 0;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.notification-item time {
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+.notification-item button {
+    flex: 0 0 auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--primary);
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.notification-panel-header button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
