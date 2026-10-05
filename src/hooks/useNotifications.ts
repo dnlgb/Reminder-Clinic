@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Notification, NotificationType } from "../types";
 import { supabase } from "../lib/supabase";
 import { sileo } from "sileo";
+import notificationSoundUrl from "../assets/esthetix.mp3";
 
 type DueCallback = {
   id: string;
@@ -21,6 +22,18 @@ export function useNotifications(userId: string | undefined) {
   const toastQueue = useRef<Notification[]>([]);
   const toastActive = useRef(false);
   const toastTimeout = useRef<number | null>(null);
+  const notificationAudio = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const audio = new Audio(notificationSoundUrl);
+    audio.preload = "auto";
+    notificationAudio.current = audio;
+
+    return () => {
+      audio.pause();
+      notificationAudio.current = null;
+    };
+  }, []);
 
   const showNextToast = useCallback(() => {
     if (toastActive.current) return;
@@ -65,12 +78,28 @@ export function useNotifications(userId: string | undefined) {
       knownNotificationIds.current = new Set(loadedNotifications.map((item) => item.id));
       hasInitialNotificationSnapshot.current = true;
     } else {
+      let receivedNewNotifications = false;
       for (const notification of loadedNotifications) {
         if (knownNotificationIds.current.has(notification.id)) continue;
         // Mark seen before showing the toast so overlapping realtime and polling
         // fetches cannot display the same notification more than once.
         knownNotificationIds.current.add(notification.id);
         toastQueue.current.push(notification);
+        receivedNewNotifications = true;
+      }
+
+      if (receivedNewNotifications) {
+        const audio = notificationAudio.current;
+        if (audio) {
+          try {
+            audio.currentTime = 0;
+            void audio.play().catch(() => {
+              // Autoplay can be blocked until the user interacts with the page.
+            });
+          } catch {
+            // Audio failures must not interrupt notification updates.
+          }
+        }
       }
       showNextToast();
     }

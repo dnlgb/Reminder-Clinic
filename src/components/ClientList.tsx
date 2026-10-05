@@ -57,7 +57,7 @@ const paginatedClients = filteredClients.slice(
                         className="client-info"
                         onClick={() => onSelectClient(client)}
                     >
-                        {`${client.name} - ${client.phone} ${client.apps?.name}`}
+                        {`${client.name} - ${client.apps?.name}`}
                     </div>
 
                     <div className="client-action">
