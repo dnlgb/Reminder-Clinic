@@ -4,6 +4,8 @@ import MainLayout from "./layouts/MainLayout";
 import "./styles/App.css";
 
 import { Form, Route, Routes } from "react-router-dom";
+import { Toaster } from "sileo";
+import "sileo/styles.css";
 
 import ClientList from "./components/ClientList";
 import ClientForm from "./components/ClientForm";
@@ -516,6 +518,8 @@ function App() {
   }
 
   return (
+    <>
+    <Toaster position="top-right" offset={16} theme="light" />
     <Routes>
       <Route element={<MainLayout />}>
         <Route
@@ -587,6 +591,7 @@ function App() {
         />
       </Route>
     </Routes>
+    </>
   );
 }
 

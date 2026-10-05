@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Notification, NotificationType } from "../types";
 import { supabase } from "../lib/supabase";
+import { sileo } from "sileo";
 
 type DueCallback = {
   id: string;
@@ -11,11 +12,40 @@ type DueCallback = {
 };
 
 const POLL_INTERVAL_MS = 30_000;
+const TOAST_DURATION_MS = 4_000;
 
 export function useNotifications(userId: string | undefined) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const knownNotificationIds = useRef(new Set<string>());
+  const hasInitialNotificationSnapshot = useRef(false);
+  const toastQueue = useRef<Notification[]>([]);
+  const toastActive = useRef(false);
+  const toastTimeout = useRef<number | null>(null);
 
-  const loadNotifications = useCallback(async () => {
+  const showNextToast = useCallback(() => {
+    if (toastActive.current) return;
+    const notification = toastQueue.current.shift();
+    if (!notification) return;
+
+    toastActive.current = true;
+    sileo.show({
+      type: "info",
+      title: notification.title,
+      description: notification.message,
+      duration: TOAST_DURATION_MS,
+      position: "top-right",
+      roundness: 14,
+    });
+    // Sileo uses one default toast ID; queue distinct notifications so each
+    // gets its own full, automatically dismissed display.
+    toastTimeout.current = window.setTimeout(() => {
+      toastActive.current = false;
+      toastTimeout.current = null;
+      showNextToast();
+    }, TOAST_DURATION_MS + 300);
+  }, []);
+
+  const loadNotifications = useCallback(async (isInitialSnapshot = false) => {
     if (!userId) {
       setNotifications([]);
       return;
@@ -29,8 +59,24 @@ export function useNotifications(userId: string | undefined) {
       console.error("No se pudieron cargar las notificaciones", error);
       return;
     }
-    setNotifications((data ?? []) as Notification[]);
-  }, [userId]);
+    const loadedNotifications = (data ?? []) as Notification[];
+
+    if (isInitialSnapshot || !hasInitialNotificationSnapshot.current) {
+      knownNotificationIds.current = new Set(loadedNotifications.map((item) => item.id));
+      hasInitialNotificationSnapshot.current = true;
+    } else {
+      for (const notification of loadedNotifications) {
+        if (knownNotificationIds.current.has(notification.id)) continue;
+        // Mark seen before showing the toast so overlapping realtime and polling
+        // fetches cannot display the same notification more than once.
+        knownNotificationIds.current.add(notification.id);
+        toastQueue.current.push(notification);
+      }
+      showNextToast();
+    }
+
+    setNotifications(loadedNotifications);
+  }, [userId, showNextToast]);
 
   const markAsRead = useCallback(async (notificationId: string) => {
     const readAt = new Date().toISOString();
@@ -75,6 +121,14 @@ export function useNotifications(userId: string | undefined) {
 
     let stopped = false;
     let running = false;
+    knownNotificationIds.current = new Set();
+    hasInitialNotificationSnapshot.current = false;
+    toastQueue.current = [];
+    toastActive.current = false;
+    if (toastTimeout.current !== null) {
+      window.clearTimeout(toastTimeout.current);
+      toastTimeout.current = null;
+    }
 
     const poll = async () => {
       if (running || stopped) return;
@@ -128,7 +182,13 @@ export function useNotifications(userId: string | undefined) {
       running = false;
     };
 
-    void poll();
+    const initialize = async () => {
+      // Existing history establishes the baseline and must not trigger toasts.
+      await loadNotifications(true);
+      if (!stopped) void poll();
+    };
+
+    void initialize();
     const interval = window.setInterval(() => void poll(), POLL_INTERVAL_MS);
     const channel = supabase
       .channel(`notifications-${userId}`)
@@ -140,6 +200,12 @@ export function useNotifications(userId: string | undefined) {
     return () => {
       stopped = true;
       window.clearInterval(interval);
+      toastQueue.current = [];
+      toastActive.current = false;
+      if (toastTimeout.current !== null) {
+        window.clearTimeout(toastTimeout.current);
+        toastTimeout.current = null;
+      }
       void supabase.removeChannel(channel);
     };
   }, [userId, loadNotifications]);

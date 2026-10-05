@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabase";
+import esthetixDentalLogo from "../assets/esthetixDentalSidebar.png";
+import "../styles/Login.css";
 
 function Login() {
     const [email, setEmail] = useState("");
@@ -27,23 +29,31 @@ function Login() {
 };
 
 return (
-    <div>
-        <h1>Callback Clinic</h1>
+    <main className="login-page">
+        <section className="login-card">
+            <header className="login-header">
+                <img
+                    className="login-logo"
+                    src={esthetixDentalLogo}
+                    alt="Esthetix Dental Spa"
+                />
+                <h1>Welcome</h1>
+            </header>
 
-    <form onSubmit={handleLogin}>
-        <div>
+    <form className="login-form" onSubmit={handleLogin}>
+        <div className="login-field">
             <label>Email</label>
 
         <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="correo@ejemplo.com"
+            placeholder="jhondoe@email.com"
             required
         />
         </div>
 
-        <div>
+        <div className="login-field">
             <label>Password</label>
 
         <input
@@ -55,13 +65,14 @@ return (
         />
         </div>
 
-        {error && <p>{error}</p>}
+        {error && <p className="login-error">{error}</p>}
 
-        <button type="submit" disabled={loading}>
+        <button className="login-submit" type="submit" disabled={loading}>
             {loading ? "Iniciando sesión..." : "Iniciar sesión"}
         </button>
     </form>
-    </div>
+        </section>
+    </main>
     );
 }
 
