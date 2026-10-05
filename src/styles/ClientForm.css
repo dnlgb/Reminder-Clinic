@@ -144,9 +144,37 @@
         transform 0.2s ease;
 }
 
-  .client-form-submit:hover {
+.client-form-submit:hover {
     background: var(--primary-dark);
     transform: translateY(-1px);
+}
+.client-form-cancel {
+    width: 100%;
+    min-height: 42px;
+    margin-top: 10px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--text-muted);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+.client-form-cancel:hover:not(:disabled) {
+    border-color: var(--primary);
+    background: var(--surface);
+    color: var(--primary);
+}
+
+.client-form-cancel:disabled {
+    cursor: wait;
+    opacity: 0.6;
 }
 .client-save-overlay {
     position: fixed;
@@ -238,7 +266,6 @@
 
     animation: errorIn 0.18s ease;
 }
-
 
 
 

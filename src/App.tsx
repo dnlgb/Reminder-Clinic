@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 
 import MainLayout from "./layouts/MainLayout";
 import "./styles/App.css";
@@ -34,6 +34,7 @@ function App() {
   const [clientsError, setClientsError] = useState<string | null>(null);
 
   const [editingClient, setEditingClient] = useState<{
+    userId: string
     client: Client
     callback: CallbackWithClient | null
 } | null>(null)
@@ -43,8 +44,12 @@ function App() {
   const [callbacksLoading, setCallbacksLoading] = useState(true);
   const [selectedClient, setSelectedClient] = useState<ClientWithApp | null>(null);
   const [callbacksError, setCallbacksError] = useState<string | null>(null);
+  const userId = session?.user?.id as string | undefined;
+  const editingClientForUser = editingClient?.userId === userId
+    ? editingClient
+    : null;
   const { notifications, unreadCount, markAsRead, markAllAsRead } =
-    useNotifications(session?.user?.id);
+    useNotifications(userId);
 
   // Obtiene la sesión actual y mantiene el estado sincronizado
   // cuando el usuario inicia o cierra sesión.
@@ -69,14 +74,26 @@ function App() {
     };
   }, []);
 
+  // Discard client-specific UI state before the next session is painted.
+  useLayoutEffect(() => {
+    setEditingClient(null);
+    setSelectedClient(null);
+    setClients([]);
+    setCallbacks([]);
+    setClientsError(null);
+    setCallbacksError(null);
+  }, [userId]);
+
   // Carga únicamente los clientes cuando existe una sesión activa.
   // RLS se encarga de limitar los resultados al usuario autenticado.
   useEffect(() => {
-    if (!session) {
+    if (!userId) {
       setClients([]);
+      setClientsLoading(false);
       return;
     }
 
+    let active = true;
     const loadClients = async () => {
       setClientsLoading(true);
       setClientsError(null);
@@ -88,27 +105,36 @@ function App() {
 
       if (error) {
         console.log(error);
-        setClientsError("No se pudieron cargar los clientes");
-        setClientsLoading(false);
+        if (active) {
+          setClientsError("No se pudieron cargar los clientes");
+          setClientsLoading(false);
+        }
         return;
       }
 
-      setClients(data as ClientWithApp[]);
-      setClientsLoading(false);
+      if (active) {
+        setClients(data as ClientWithApp[]);
+        setClientsLoading(false);
+      }
     };
 
     loadClients();
-  }, [session]);
+    return () => {
+      active = false;
+    };
+  }, [userId]);
 
   // Carga los callbacks asociados a los clientes del usuario.
   // La relación con clientes y apps permite mostrar toda la información
   // necesaria en la interfaz sin hacer consultas separadas por callback.
   useEffect(() => {
-    if (!session) {
+    if (!userId) {
       setCallbacks([]);
+      setCallbacksLoading(false);
       return;
     }
 
+    let active = true;
     const loadCallbacks = async () => {
       setCallbacksLoading(true);
       setCallbacksError(null);
@@ -132,17 +158,24 @@ function App() {
 
       if (error) {
         console.log(error);
-        setCallbacksError("No se pudieron cargar los callbacks");
-        setCallbacksLoading(false);
+        if (active) {
+          setCallbacksError("No se pudieron cargar los callbacks");
+          setCallbacksLoading(false);
+        }
         return;
       }
 
-      setCallbacks(data as CallbackWithClient[]);
-      setCallbacksLoading(false);
+      if (active) {
+        setCallbacks(data as CallbackWithClient[]);
+        setCallbacksLoading(false);
+      }
     };
 
     loadCallbacks();
-  }, [session]);
+    return () => {
+      active = false;
+    };
+  }, [userId]);
 
   // Crea un cliente y su primer callback en una misma acción.
   // El callback necesita el ID generado por Supabase al crear el cliente.
@@ -258,9 +291,14 @@ function App() {
         )
 
     setEditingClient({
+        userId: userId ?? "",
         client,
         callback: clientCallbacks[0] ?? null
     })
+  };
+
+  const cancelEditing = () => {
+    setEditingClient(null);
   };
 
 
@@ -543,8 +581,10 @@ function App() {
                 
                 <ClientForm
                   onCreateClientndCallbck={createClientndCallbck}
-                  editingClient={editingClient}
+                  key={userId ?? "signed-out"}
+                  editingClient={editingClientForUser}
                   onUpdateClient={updateClient}
+                  onCancelEditing={cancelEditing}
                 />
               </div>
 
@@ -557,6 +597,7 @@ function App() {
                   <p>No clients found</p>
                 ) : (
                   <ClientList
+                    key={userId ?? "signed-out"}
                     clients={clients}
                     onDeleteClient={deleteClient}
                     onEditClient={startEditing}

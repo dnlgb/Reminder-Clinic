@@ -10,7 +10,8 @@ function ClientForm(
     {
         onCreateClientndCallbck,
         editingClient,
-        onUpdateClient
+        onUpdateClient,
+        onCancelEditing
     }: {
         onCreateClientndCallbck: (
             cliente: NewClient,
@@ -33,8 +34,9 @@ function ClientForm(
                     id: string
                     scheduled_at: string
                     notes: string | null
-                } | null
+            } | null
             }) => Promise<boolean>
+        onCancelEditing: () => void
     }
 ) {
     const [name, setName] = useState("")
@@ -92,6 +94,14 @@ function ClientForm(
             setScheduledAt("")
             setNotes("")
         }
+    } else {
+        setName("")
+        setPhone("")
+        setSource("")
+        setScheduledAt("")
+        setNotes("")
+        setError("")
+        setShowSuccess(false)
     }
 }, [editingClient])
 
@@ -312,6 +322,17 @@ function ClientForm(
             : "Create client & callback"
     }
 </button>
+
+{editingClient && (
+    <button
+        type="button"
+        className="client-form-cancel"
+        disabled={isSaving}
+        onClick={onCancelEditing}
+    >
+        Cancel editing
+    </button>
+)}
 
 {showSuccess && (
     <div className="client-save-overlay">
