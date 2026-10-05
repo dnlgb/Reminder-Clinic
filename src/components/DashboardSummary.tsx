@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import type { CallbackWithClient } from "../types"
-import "../Styles/Home.css"
+import "../styles/Home.css"
 import { CalendarDots } from "@phosphor-icons/react"
 import NotificationButton from "./NotificationButton"
 import NotificationPanel from "./NotificationPanel"

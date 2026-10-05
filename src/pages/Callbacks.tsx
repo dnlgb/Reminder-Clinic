@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { CallbackWithClient } from "../types";
-import "../Styles/Callbacks.css"
+import "../styles/Callbacks.css"
 import { Blobatar } from "@blobatar/react";
 import "blobatar/motion.css";
 import { Check } from "@phosphor-icons/react"
