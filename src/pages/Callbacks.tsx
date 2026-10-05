@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Callback, CallbackWithClient } from "../types";
+import type { CallbackWithClient } from "../types";
 import "../Styles/Callbacks.css"
 import { Blobatar } from "@blobatar/react";
 import "blobatar/motion.css";
@@ -57,15 +57,6 @@ const [selectedCallback, setSelectedCallback] =
 
 
   // HELPERS
-
-const getInitials = (name: string) => {
-    return name
-        .split(" ")
-        .slice(0, 2)
-        .map((word) => word[0])
-        .join("")
-        .toUpperCase();
-};
 
 const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("es-CO", {
@@ -181,7 +172,6 @@ const callbackGroups = Object.entries(groupedCallbacks).sort(
     if (dateAIsToday) return -1;
     if (dateBIsToday) return 1;
 
-    const now = new Date();
     const dateAObj = new Date(`${dateA}T00:00:00`);
     const dateBObj = new Date(`${dateB}T00:00:00`);
     const todayObj = new Date(`${todayKey}T00:00:00`);

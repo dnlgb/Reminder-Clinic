@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useState } from "react";
 import MainLayout from "./layouts/MainLayout";
 import "./styles/App.css";
 
-import { Form, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { Toaster } from "sileo";
 import "sileo/styles.css";
 
