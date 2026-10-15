@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import MainLayout from "./layouts/MainLayout";
 import "./styles/App.css";
@@ -24,10 +24,11 @@ import type {
 } from "./types";
 
 import { supabase } from "./lib/supabase";
+import { useIdleSession } from "./hooks/useIdleSession";
 
 function App() {
-  const [session, setSession] = useState<any>(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const { session, authLoading } = useIdleSession();
+  const sessionGenerationRef = useRef(0);
 
   const [clients, setClients] = useState<ClientWithApp[]>([]);
   const [clientsLoading, setClientsLoading] = useState(true);
@@ -45,37 +46,23 @@ function App() {
   const [selectedClient, setSelectedClient] = useState<ClientWithApp | null>(null);
   const [callbacksError, setCallbacksError] = useState<string | null>(null);
   const userId = session?.user?.id as string | undefined;
+  const captureSession = () => {
+    const userIdAtStart = userId;
+    const generation = sessionGenerationRef.current;
+    return {
+      userId: userIdAtStart,
+      isCurrent: () => Boolean(userIdAtStart && generation === sessionGenerationRef.current),
+    };
+  };
   const editingClientForUser = editingClient?.userId === userId
     ? editingClient
     : null;
   const { notifications, unreadCount, markAsRead, markAllAsRead } =
-    useNotifications(userId);
-
-  // Obtiene la sesión actual y mantiene el estado sincronizado
-  // cuando el usuario inicia o cierra sesión.
-  useEffect(() => {
-    const getSession = async () => {
-      const { data } = await supabase.auth.getSession();
-
-      setSession(data.session);
-      setAuthLoading(false);
-    };
-
-    getSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
+    useNotifications(userId, session?.access_token as string | undefined);
 
   // Discard client-specific UI state before the next session is painted.
   useLayoutEffect(() => {
+    sessionGenerationRef.current += 1;
     setEditingClient(null);
     setSelectedClient(null);
     setClients([]);
@@ -88,7 +75,6 @@ function App() {
   // RLS se encarga de limitar los resultados al usuario autenticado.
   useEffect(() => {
     if (!userId) {
-      setClients([]);
       setClientsLoading(false);
       return;
     }
@@ -129,7 +115,6 @@ function App() {
   // necesaria en la interfaz sin hacer consultas separadas por callback.
   useEffect(() => {
     if (!userId) {
-      setCallbacks([]);
       setCallbacksLoading(false);
       return;
     }
@@ -186,11 +171,14 @@ function App() {
       notes?: string;
     }
   ) => {
+    const capturedSession = captureSession();
+    if (!capturedSession.isCurrent()) return false;
+
     const {
       data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) {
+    if (!user || user.id !== capturedSession.userId || !capturedSession.isCurrent()) {
       return false;
     }
 
@@ -209,6 +197,7 @@ function App() {
     `)
       .single();
 
+    if (!capturedSession.isCurrent()) return false;
     if (clientError) {
       console.log(clientError);
       return false;
@@ -227,6 +216,7 @@ function App() {
       .select()
       .single();
 
+    if (!capturedSession.isCurrent()) return false;
     if (callbackError) {
       console.log(callbackError);
       return false;
@@ -260,11 +250,14 @@ function App() {
   // En lugar de eliminar físicamente al cliente, lo marcamos como inactivo.
   // Esto conserva su información en la base de datos.
   const deleteClient = async (client: Client) => {
+    const capturedSession = captureSession();
+    if (!capturedSession.isCurrent()) return false;
     const { error } = await supabase
       .from("clientes")
       .update({ active: false })
       .eq("id", client.id);
 
+    if (!capturedSession.isCurrent()) return false;
     if (error) {
       console.log(error);
       return false;
@@ -315,6 +308,8 @@ function App() {
         notes: string | null
     } | null
 }) => {
+    const capturedSession = captureSession();
+    if (!capturedSession.isCurrent()) return false;
     const { error } = await supabase
         .from("clientes")
         .update({
@@ -325,6 +320,7 @@ function App() {
         })
         .eq("id", updatedClient.client.id)
 
+    if (!capturedSession.isCurrent()) return false;
     if (error) {
         console.log(error)
         return false
@@ -341,6 +337,7 @@ function App() {
             })
             .eq("id", updatedClient.callback.id)
 
+        if (!capturedSession.isCurrent()) return false;
         if (callbackError) {
             console.log(callbackError)
             return false
@@ -377,11 +374,14 @@ function App() {
 }
   
   const deleteCallback = async (callback: CallbackWithClient) => {
+        const capturedSession = captureSession();
+        if (!capturedSession.isCurrent()) return false;
         const {error} = await supabase
           .from("callbacks")
           .delete()
           .eq("id", callback.id)
 
+        if (!capturedSession.isCurrent()) return false;
         if(error) {
           console.log(error)
           return false
@@ -402,6 +402,8 @@ function App() {
     notes: string,
     rescheduleAt: string
   ): Promise<boolean> => {
+    const capturedSession = captureSession();
+    if (!capturedSession.isCurrent()) return false;
     const scheduledAt = new Date(rescheduleAt);
     if (!rescheduleAt || Number.isNaN(scheduledAt.getTime())) return false;
 
@@ -433,6 +435,7 @@ function App() {
       `)
       .single();
 
+    if (!capturedSession.isCurrent()) return false;
     if (insertError || !newCallback) {
       console.error("No se pudo crear el nuevo callback", insertError);
       return false;
@@ -448,6 +451,7 @@ function App() {
       })
       .eq("id", callback.id);
 
+    if (!capturedSession.isCurrent()) return false;
     if (updateError) {
       const { error: rollbackError } = await supabase
         .from("callbacks")
@@ -489,6 +493,8 @@ function App() {
       | null,
     snoozeAt: string | null
   ): Promise<boolean> => {
+    const capturedSession = captureSession();
+    if (!capturedSession.isCurrent()) return false;
     // Una respuesta aceptada o rechazada termina el callback actual.
     if (callResult === "accepted" || callResult === "declined") {
       const { error } = await supabase
@@ -501,6 +507,7 @@ function App() {
         })
         .eq("id", callback.id);
 
+      if (!capturedSession.isCurrent()) return false;
       if (error) {
         console.log(error);
         return false;
@@ -534,6 +541,7 @@ function App() {
         })
         .eq("id", callback.id);
 
+      if (!capturedSession.isCurrent()) return false;
       if (error) {
         console.log(error);
         return false;
@@ -568,7 +576,7 @@ function App() {
   return (
     <>
     <Toaster position="top-right" offset={16} theme="light" />
-    <Routes>
+    <Routes key={userId ?? "signed-out"}>
       <Route element={<MainLayout />}>
         <Route
           path="/"

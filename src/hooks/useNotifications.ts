@@ -14,15 +14,17 @@ type DueCallback = {
 
 type UserNotificationSnapshot = {
   userId: string | undefined;
+  sessionKey: string | undefined;
   items: Notification[];
 };
 
 const POLL_INTERVAL_MS = 30_000;
 const TOAST_DURATION_MS = 4_000;
 
-export function useNotifications(userId: string | undefined) {
+export function useNotifications(userId: string | undefined, sessionKey: string | undefined) {
   const [notificationSnapshot, setNotificationSnapshot] = useState<UserNotificationSnapshot>({
     userId,
+    sessionKey,
     items: [],
   });
   const sessionGeneration = useRef(0);
@@ -31,6 +33,7 @@ export function useNotifications(userId: string | undefined) {
   const toastQueue = useRef<Notification[]>([]);
   const toastActive = useRef(false);
   const toastTimeout = useRef<number | null>(null);
+  const activeToastId = useRef<string | null>(null);
   const notificationAudio = useRef<HTMLAudioElement | null>(null);
   const pendingNotificationSound = useRef(false);
   const showNextToastRef = useRef<() => void>(() => {});
@@ -40,7 +43,7 @@ export function useNotifications(userId: string | undefined) {
     return () => {
       sessionGeneration.current = generation + 1;
     };
-  }, [userId]);
+  }, [userId, sessionKey]);
 
   const showNextToast = useCallback(() => {
     // Keep queued alerts until the page is visible so they can be shown on return.
@@ -68,7 +71,7 @@ export function useNotifications(userId: string | undefined) {
     }
 
     toastActive.current = true;
-    sileo.show({
+    activeToastId.current = sileo.show({
       type: "info",
       title: notification.title,
       description: notification.message,
@@ -81,6 +84,7 @@ export function useNotifications(userId: string | undefined) {
     toastTimeout.current = window.setTimeout(() => {
       toastActive.current = false;
       toastTimeout.current = null;
+      activeToastId.current = null;
       showNextToastRef.current();
     }, TOAST_DURATION_MS + 300);
   }, []);
@@ -112,7 +116,7 @@ export function useNotifications(userId: string | undefined) {
       console.error("No se pudo marcar la notificación como leída", error);
       return false;
     }
-    setNotificationSnapshot((current) => generation === sessionGeneration.current && current.userId === userId
+    setNotificationSnapshot((current) => generation === sessionGeneration.current && current.userId === userId && current.sessionKey === sessionKey
       ? {
           ...current,
           items: current.items.map((item) => item.id === notificationId ? { ...item, read_at: readAt } : item),
@@ -120,7 +124,7 @@ export function useNotifications(userId: string | undefined) {
       : current
     );
     return true;
-  }, [userId]);
+  }, [userId, sessionKey]);
 
   const markAllAsRead = useCallback(async () => {
     if (!userId) return false;
@@ -136,7 +140,7 @@ export function useNotifications(userId: string | undefined) {
       console.error("No se pudieron marcar todas como leídas", error);
       return false;
     }
-    setNotificationSnapshot((current) => generation === sessionGeneration.current && current.userId === userId
+    setNotificationSnapshot((current) => generation === sessionGeneration.current && current.userId === userId && current.sessionKey === sessionKey
       ? {
           ...current,
           items: current.items.map((item) => item.read_at ? item : { ...item, read_at: readAt }),
@@ -144,7 +148,7 @@ export function useNotifications(userId: string | undefined) {
       : current
     );
     return true;
-  }, [userId]);
+  }, [userId, sessionKey]);
 
   useEffect(() => {
     if (!userId) return;
@@ -197,7 +201,7 @@ export function useNotifications(userId: string | undefined) {
       }
 
       setNotificationSnapshot((current) => isCurrentSession()
-        ? { userId, items: loadedNotifications }
+        ? { userId, sessionKey, items: loadedNotifications }
         : current
       );
     };
@@ -309,11 +313,17 @@ export function useNotifications(userId: string | undefined) {
         window.clearTimeout(toastTimeout.current);
         toastTimeout.current = null;
       }
+      if (activeToastId.current !== null) {
+        sileo.dismiss(activeToastId.current);
+        activeToastId.current = null;
+      }
       void supabase.removeChannel(channel);
     };
-  }, [userId, showNextToast]);
+  }, [userId, sessionKey, showNextToast]);
 
-  const currentNotifications = notificationSnapshot.userId === userId ? notificationSnapshot.items : [];
+  const currentNotifications = notificationSnapshot.userId === userId && notificationSnapshot.sessionKey === sessionKey
+    ? notificationSnapshot.items
+    : [];
   const unreadCount = currentNotifications.reduce((count, item) => count + (item.read_at ? 0 : 1), 0);
   return { notifications: currentNotifications, unreadCount, markAsRead, markAllAsRead };
 }
