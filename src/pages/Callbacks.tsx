@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { CallbackWithClient } from "../types";
 import "../styles/Callbacks.css"
 import { Blobatar } from "@blobatar/react";
@@ -10,6 +10,7 @@ function Callbacks({
     callbacksLoading,
     callbacksError,
     deleteCallback,
+    handleRescheduleCallback,
     handleSaveCallback,
 
 }: {
@@ -17,17 +18,18 @@ function Callbacks({
     callbacksLoading: boolean;
     callbacksError: string | null;
 
-    deleteCallback: (
-        callback: CallbackWithClient
-    ) => Promise <boolean>
-
-handleSaveCallback: (
+    deleteCallback: (callback: CallbackWithClient) => Promise<boolean>;
+    handleRescheduleCallback: (
+        callback: CallbackWithClient,
+        notes: string,
+        rescheduleAt: string
+    ) => Promise<boolean>;
+    handleSaveCallback: (
     callback: CallbackWithClient,
     notes: string,
-    callResult: "accepted" | "rescheduled" | "declined" | null,
-    snoozeAt: string | null,
-    rescheduleAt: string
-) => Promise<boolean>;
+    callResult: "accepted" | "declined" | null,
+    snoozeAt: string | null
+    ) => Promise<boolean>;
 }) 
 {
 
@@ -43,14 +45,15 @@ const [callbackNotes, setCallbackNotes] = useState("");
 const [selectedSnoozeOption, setSelectedSnoozeOption] =
     useState<"15m" | "1h" | "3h" | "custom" | null>(null);
 const [saveMessage, setSaveMessage] = useState<string | null>(null);
+const [saveError, setSaveError] = useState<string | null>(null);
+const [isSaving, setIsSaving] = useState(false);
+const savingRef = useRef(false);
 const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
 const [selectedCallResult, setSelectedCallResult] =
-    useState<"accepted" | "rescheduled" |"declined" | null>(null);
+    useState<"accepted" | "declined" | null>(null);
 const [selectedSnoozeAt, setSelectedSnoozeAt] =
     useState<string | null>(null);
-const [selectedRescheduleAt, setSelectedRescheduleAt] =
-    useState("");
 
 const [selectedCallback, setSelectedCallback] =
     useState<CallbackWithClient | null>(null);
@@ -192,6 +195,61 @@ const callbackGroups = Object.entries(groupedCallbacks).sort(
 }
 );
 
+const submitCallback = async (action: "save" | "reschedule") => {
+    if (!selectedCallback || savingRef.current) return;
+    if (action === "reschedule" && !rescheduledAt) return;
+
+    savingRef.current = true;
+    setIsSaving(true);
+    setSaveError(null);
+
+    try {
+        const saved = action === "reschedule"
+            ? await handleRescheduleCallback(selectedCallback, callbackNotes, rescheduledAt)
+            : await handleSaveCallback(
+                selectedCallback,
+                callbackNotes,
+                selectedCallResult,
+                selectedSnoozeAt
+            );
+
+        if (!saved) {
+            setSaveError(
+                action === "reschedule"
+                    ? "Could not reschedule this callback. Your details are still here; please try again."
+                    : "Could not save this callback. Your details are still here; please try again."
+            );
+            return;
+        }
+
+        setSelectedCallback(null);
+        setSelectedCallResult(null);
+        setSelectedSnoozeAt(null);
+        setSelectedSnoozeOption(null);
+        setIsRescheduling(false);
+        setIsSnoozing(false);
+        setIsCustomSnoozing(false);
+        setRescheduledAt("");
+        setCustomSnoozeHours("");
+        setCustomSnoozeMinutes("");
+        setCallbackNotes("");
+        setSaveMessage(action === "reschedule" ? "Callback rescheduled" : "Callback saved");
+
+        window.setTimeout(() => {
+            setSaveMessage(null);
+        }, 2000);
+    } catch (error) {
+        console.error("No se pudo guardar el callback", error);
+        setSaveError(
+            action === "reschedule"
+                ? "Could not reschedule this callback. Your details are still here; please try again."
+                : "Could not save this callback. Your details are still here; please try again."
+        );
+    } finally {
+        savingRef.current = false;
+        setIsSaving(false);
+    }
+};
 
 
 return (
@@ -306,7 +364,11 @@ return (
         <div
             className="callback-row"
             key={callback.id}
-            onClick={() => setSelectedCallback(callback)}>
+            onClick={() => {
+                if (savingRef.current) return;
+                setSaveError(null);
+                setSelectedCallback(callback);
+            }}>
             <div className="callback-client">
                 <Blobatar
                     name={client?.id ?? client?.name ?? "—"}
@@ -348,6 +410,8 @@ return (
                     className="callback-menu-button"
                     onClick={(e) => {
                     e.stopPropagation();
+                    if (savingRef.current) return;
+                    setSaveError(null);
                     setSelectedCallback(callback);
                 }}
                     title="Open callback"
@@ -371,13 +435,17 @@ return (
 
             <strong>{saveMessage}</strong>
 
-            <span>The callback was saved successfully.</span>
+            <span>
+                {saveMessage === "Callback rescheduled"
+                    ? "The previous callback was completed and a new one was scheduled."
+                    : "The callback was saved successfully."}
+            </span>
         </div>
     </div>
 )}
 
         {selectedCallback && (
-    <aside className="callback-panel">
+    <aside className="callback-panel" aria-busy={isSaving}>
 
     <div className="callback-panel-header">
         <div>
@@ -392,6 +460,7 @@ return (
 
     <button
         className="callback-panel-close"
+        disabled={isSaving}
         onClick={() => setSelectedCallback(null)}
         >
             ×
@@ -432,30 +501,23 @@ return (
                 // Limpiamos cualquier otra acción pendiente
                 setSelectedSnoozeAt(null);
                 setSelectedSnoozeOption(null);
-                setSelectedRescheduleAt("");
+                setRescheduledAt("");
             }}
         >
             Accepted
         </button>
 
 
-        {/* Reschedule*/}
+        {/* Reschedule */}
         <button
-            className={
-                selectedCallResult === "rescheduled"
-                    ? "selected"
-                    : ""
-            }
             onClick={() => {
                 if (!selectedCallback) return;
 
                 setIsRescheduling(true);
-
-                
                 setSelectedCallResult(null);
                 setSelectedSnoozeAt(null);
                 setSelectedSnoozeOption(null);
-                setSelectedRescheduleAt("");
+                setRescheduledAt("");
             }}
         >
             Rescheduled
@@ -474,9 +536,8 @@ return (
 
                 setIsSnoozing(true);
 
-                
                 setSelectedCallResult(null);
-                setSelectedRescheduleAt("");
+                setRescheduledAt("");
                 setSelectedSnoozeAt(null);
                 setSelectedSnoozeOption(null);
             }}
@@ -500,7 +561,7 @@ return (
                 
                 setSelectedSnoozeAt(null);
                 setSelectedSnoozeOption(null);
-                setSelectedRescheduleAt("");
+                setRescheduledAt("");
             }}
         >
             Declined
@@ -709,60 +770,35 @@ return (
 
 {/* RESCHEDULE */}
 {isRescheduling && (
-<div>
+<div className="callback-reschedule-fields">
     <button
+            className="callback-panel-cancel callback-reschedule-back"
             type="button"
+            disabled={isSaving}
             onClick={() => {
                 setIsRescheduling(false);
                 setRescheduledAt("");
-                setSelectedRescheduleAt("");
                 setSelectedCallResult(null);
+                setSaveError(null);
             }}
         >
             ← Back
         </button>
         <input
+            className="callback-reschedule-input"
             type="datetime-local"
             value={rescheduledAt}
-            onChange={(event) =>
-                setRescheduledAt(event.target.value)
-            }
+            disabled={isSaving}
+            onChange={(event) => {
+                setRescheduledAt(event.target.value);
+                setSaveError(null);
+            }}
         />
-
-        {/* CANCEL */}
-        <button
-            onClick={() => {
-                setIsRescheduling(false);
-                setRescheduledAt("");
-            }}
-        >
-            Cancel
-        </button>
-
-
-        {/* RESCHEDULE */}
-        <button
-            disabled={!rescheduledAt}
-            onClick={() => {
-
-                if (!selectedCallback) return;
-                console.log("RESCHEDULE BUTTON CLICK", {
-            rescheduledAt
-        });
-                setSelectedRescheduleAt(
-                    rescheduledAt
-                );
-
-                setSelectedCallResult(
-                    "rescheduled"
-                );
-
-                setIsRescheduling(false);
-            }}
-        >
-            Confirm reschedule
-        </button>
-
+        {rescheduledAt && (
+            <p className="callback-reschedule-preview" role="status">
+                New callback: <strong>{formatDate(rescheduledAt)} · {formatTime(rescheduledAt)}</strong>
+            </p>
+        )}
     </div>
 )}
 </div>
@@ -781,6 +817,7 @@ return (
         id="callback-notes"
         placeholder="Add notes about the call..."
         value={callbackNotes}
+        disabled={isSaving}
         onChange={(event) =>
                 setCallbackNotes(event.target.value)
         }
@@ -788,60 +825,37 @@ return (
     </div>
     <button
     className="callback-panel-delete"
+    disabled={isSaving}
     onClick={() => setShowDeleteConfirm(true)}
 >
     Delete callback
 </button>
 
+    {saveError && (
+        <p className="callback-operation-error" role="alert">
+            {saveError}
+        </p>
+    )}
+
     <div className="callback-panel-actions">
     <button
         className="callback-panel-cancel"
+        disabled={isSaving}
         onClick={() => setSelectedCallback(null)}
     >
         Cancel
     </button>
 
-        <button className="callback-panel-save"
-        onClick={async() => 
-            
-        {if(!selectedCallback)return;
-            console.log("BEFORE SAVE:", {
-            selectedCallResult,
-            selectedSnoozeAt,
-            selectedRescheduleAt
-            });
-        const saved = await handleSaveCallback(
-            selectedCallback,
-            callbackNotes,
-            selectedCallResult,
-            selectedSnoozeAt,
-            selectedRescheduleAt
-        );
-        if (!saved) return;
-
-            setSelectedCallback(null);
-
-            setSelectedCallResult(null);
-            setSelectedSnoozeAt(null);
-            setSelectedSnoozeOption(null);
-            setSelectedRescheduleAt("");
-            setIsRescheduling(false);
-            setIsSnoozing(false);
-            setIsCustomSnoozing(false);
-
-            setRescheduledAt("");
-            setCustomSnoozeHours("");
-            setCustomSnoozeMinutes("");
-            setCallbackNotes("");
-
-            setSaveMessage("Callback saved");
-
-            setTimeout(() => {
-                setSaveMessage(null);
-            }, 2000);
-    }}
+        <button
+            className="callback-panel-save"
+            disabled={isSaving || (isRescheduling && !rescheduledAt)}
+            onClick={() => void submitCallback(isRescheduling ? "reschedule" : "save")}
         >
-            Save callback
+            {isSaving
+                ? "Saving..."
+                : isRescheduling
+                    ? "Confirm reschedule"
+                    : "Save callback"}
         </button>
     </div>
     {showDeleteConfirm && (

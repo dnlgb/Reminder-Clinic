@@ -440,6 +440,58 @@
   box-shadow: 0 0 0 3px rgba(47, 78, 138, 0.08);
 }
 
+.callback-reschedule-fields {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.callback-reschedule-back {
+  min-height: 38px;
+  padding: 0 12px;
+}
+
+.callback-reschedule-input {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.callback-reschedule-input:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 10%, transparent);
+}
+
+.callback-reschedule-preview {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.callback-reschedule-preview strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.callback-operation-error {
+  margin: 16px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--danger) 6%, var(--surface));
+  color: var(--danger);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .callback-panel-actions {
   display: flex;
   gap: 10px;
@@ -467,6 +519,14 @@
   border: none;
   background: #1B2F5B;
   color: #ffffff;
+}
+
+.callback-panel-save:disabled,
+.callback-panel-cancel:disabled,
+.callback-panel-close:disabled,
+.callback-panel-delete:disabled {
+  cursor: wait;
+  opacity: 0.6;
 }
 .callback-outcomes button.selected {
   border: 2px solid #1B2F5B !important;

@@ -397,18 +397,97 @@ function App() {
   }
 
 
-  // Maneja las diferentes acciones que pueden ocurrir al guardar un callback:
-// finalizarlo, reagendarlo o posponer su recordatorio.
+  const handleRescheduleCallback = async (
+    callback: CallbackWithClient,
+    notes: string,
+    rescheduleAt: string
+  ): Promise<boolean> => {
+    const scheduledAt = new Date(rescheduleAt);
+    if (!rescheduleAt || Number.isNaN(scheduledAt.getTime())) return false;
+
+    const {
+      data: newCallback,
+      error: insertError,
+    } = await supabase
+      .from("callbacks")
+      .insert({
+        client_id: callback.client_id,
+        scheduled_at: scheduledAt.toISOString(),
+        status: "pending",
+        notes: null,
+        call_result: null,
+        next_reminder_at: null,
+      })
+      .select(`
+        *,
+        clientes (
+          id,
+          name,
+          phone,
+          source,
+          apps (
+            id,
+            name
+          )
+        )
+      `)
+      .single();
+
+    if (insertError || !newCallback) {
+      console.error("No se pudo crear el nuevo callback", insertError);
+      return false;
+    }
+
+    const { error: updateError } = await supabase
+      .from("callbacks")
+      .update({
+        status: "completed",
+        call_result: "rescheduled",
+        next_reminder_at: null,
+        notes: notes || null,
+      })
+      .eq("id", callback.id);
+
+    if (updateError) {
+      const { error: rollbackError } = await supabase
+        .from("callbacks")
+        .delete()
+        .eq("id", newCallback.id);
+
+      if (rollbackError) {
+        console.error("No se pudo retirar el nuevo callback tras fallar el reagendamiento", rollbackError);
+      }
+      console.error("No se pudo completar el callback reagendado", updateError);
+      return false;
+    }
+
+    setCallbacks((currentCallbacks) => [
+      ...currentCallbacks.map((currentCallback) =>
+        currentCallback.id === callback.id
+          ? {
+              ...currentCallback,
+              status: "completed" as const,
+              call_result: "rescheduled" as const,
+              next_reminder_at: null,
+              notes: notes || null,
+            }
+          : currentCallback
+      ),
+      newCallback as CallbackWithClient,
+    ]);
+
+    return true;
+  };
+
+  // Guarda el resultado de la llamada o pospone su recordatorio.
   const handleSaveCallback = async (
     callback: CallbackWithClient,
     notes: string,
     callResult:
       | "accepted"
-      | "rescheduled"
       | "declined"
       | null,
-    snoozeAt: string | null,
-    rescheduleAt: string
+    snoozeAt: string | null
   ): Promise<boolean> => {
     // Una respuesta aceptada o rechazada termina el callback actual.
     if (callResult === "accepted" || callResult === "declined") {
@@ -440,75 +519,6 @@ function App() {
             : currentCallback
         )
       );
-
-      return true;
-    }
-
-    // Rescheduler requiere cerrar el callback actual y crear uno nuevo
-    // manteniendo la relación con el mismo cliente.
-    if (callResult === "rescheduled" && rescheduleAt) {
-      const { error: updateError } = await supabase
-        .from("callbacks")
-        .update({
-          status: "completed",
-          call_result: "rescheduled",
-          next_reminder_at: null,
-          notes: notes || null,
-        })
-        .eq("id", callback.id);
-
-      if (updateError) {
-        console.log(updateError);
-        return false;
-      }
-
-      const {
-        data: newCallback,
-        error: insertError,
-      } = await supabase
-        .from("callbacks")
-        .insert({
-          client_id: callback.client_id,
-          scheduled_at: new Date(rescheduleAt).toISOString(),
-          status: "pending",
-          notes: null,
-          call_result: null,
-          next_reminder_at: null,
-        })
-        .select(`
-          *,
-          clientes (
-            id,
-            name,
-            phone,
-            source,
-            apps (
-              id,
-              name
-            )
-          )
-        `)
-        .single();
-
-      if (insertError) {
-        console.log(insertError);
-        return false;
-      }
-
-      setCallbacks((currentCallbacks) => [
-        ...currentCallbacks.map((currentCallback) =>
-          currentCallback.id === callback.id
-            ? {
-                ...currentCallback,
-                status: "completed" as const,
-                call_result: "rescheduled" as const,
-                next_reminder_at: null,
-                notes: notes || null,
-              }
-            : currentCallback
-        ),
-        newCallback as CallbackWithClient,
-      ]);
 
       return true;
     }
@@ -626,6 +636,7 @@ function App() {
               callbacksLoading={callbacksLoading}
               callbacksError={callbacksError}
               deleteCallback={deleteCallback}
+              handleRescheduleCallback={handleRescheduleCallback}
               handleSaveCallback={handleSaveCallback}
             />
           }
