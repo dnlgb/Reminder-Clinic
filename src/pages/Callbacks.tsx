@@ -339,7 +339,8 @@ return (
             </div>
 
             <span className="callback-status">
-                {statusLabel}
+                <span className="callback-status-label">Status</span>
+                <span className="callback-status-value">{statusLabel}</span>
             </span>
 
             <div className="callback-actions">

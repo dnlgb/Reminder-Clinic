@@ -73,6 +73,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
+    min-width: 0;
 
     min-height: 72px;
     margin-bottom: 12px;
@@ -103,6 +105,8 @@
 }
 
 .client-info {
+    min-width: 0;
+    flex: 1 1 auto;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -112,6 +116,8 @@
     font-weight: 500;
 
     cursor: pointer;
+    overflow-wrap: anywhere;
+    line-height: 1.45;
 }
 
 .client-action {
@@ -119,6 +125,7 @@
 
     display: flex;
     align-items: center;
+    flex: 0 0 auto;
 }
 
 .client-action > button {
@@ -153,7 +160,9 @@
     top: calc(100% + 6px);
     right: 0;
 
-    min-width: 160px;
+    width: max-content;
+    min-width: min(160px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
     padding: 6px;
 
     background: rgba(255, 255, 255, 0.88);
@@ -210,7 +219,7 @@
 }
 
 .client-pagination span {
-    min-width: 90px;
+    min-width: min(90px, 30vw);
 
     color: var(--text-muted);
     font-size: 12px;
@@ -260,4 +269,50 @@
 
 .client-item:has(.client-menu) {
     z-index: 20;
+}
+
+@media (max-width: 600px) {
+    .clients-list-column {
+        padding: 18px;
+    }
+
+    .client-list-header h2 {
+        font-size: 22px;
+    }
+
+    .client-search {
+        font-size: 16px;
+    }
+
+    .client-item {
+        align-items: flex-start;
+        gap: 8px;
+        padding: 14px 12px;
+    }
+
+    .client-action > button {
+        width: 40px;
+        height: 40px;
+        margin: -4px -4px 0 0;
+    }
+
+    .client-pagination {
+        gap: 10px;
+    }
+
+    .client-pagination button {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 360px) {
+    .clients-list-column {
+        padding: 14px;
+    }
+
+    .client-item {
+        padding-right: 8px;
+        padding-left: 10px;
+    }
 }

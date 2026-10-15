@@ -161,23 +161,25 @@ function DashboardSummary({
     return (
         <>
             <section className="dashboard-header">
-            <h2>{greeting}</h2>
-            <p>Here's what needs your attention today.</p>
-            <div className="dashboard-notifications">
-                <NotificationButton
-                    unreadCount={unreadCount}
-                    isOpen={notificationsOpen}
-                    onClick={() => setNotificationsOpen((open) => !open)}
-                />
-                {notificationsOpen && (
-                    <NotificationPanel
-                        notifications={notifications}
-                        onMarkAsRead={(id) => void markAsRead(id)}
-                        onMarkAllAsRead={() => void markAllAsRead()}
+                <div className="dashboard-heading">
+                    <h2>{greeting}</h2>
+                    <p>Here's what needs your attention today.</p>
+                </div>
+                <div className="dashboard-notifications">
+                    <NotificationButton
+                        unreadCount={unreadCount}
+                        isOpen={notificationsOpen}
+                        onClick={() => setNotificationsOpen((open) => !open)}
                     />
-                )}
-            </div>
-        </section>
+                    {notificationsOpen && (
+                        <NotificationPanel
+                            notifications={notifications}
+                            onMarkAsRead={(id) => void markAsRead(id)}
+                            onMarkAllAsRead={() => void markAllAsRead()}
+                        />
+                    )}
+                </div>
+            </section>
 
         <section className="dashboard-main">
 

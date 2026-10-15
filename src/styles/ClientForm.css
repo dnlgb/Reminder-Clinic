@@ -2,6 +2,7 @@
 
 .client-form-card {
   width: 100%;
+  min-width: 0;
   padding: 30px;
 
 }
@@ -39,6 +40,10 @@
   align-items: flex-start;
   gap: 12px;
   margin-bottom: 22px;
+}
+
+.client-form-section-header > div {
+  min-width: 0;
 }
 
 .client-form-section-header h3 {
@@ -254,7 +259,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    margin: 16px 0 0;
+    margin: 16px 0 40px;
     padding: 10px 12px;
     border-left: 3px solid var(--danger);
     border-radius: 7px;
@@ -262,11 +267,33 @@
     color: #ffffff;
     font-size: 13px;
     font-weight: 500;
-    margin-bottom: 40px;
-
     animation: errorIn 0.18s ease;
 }
 
+@media (max-width: 600px) {
+    .client-form-card {
+        padding: 12px 8px;
+    }
 
+    .client-form-header {
+        margin-bottom: 24px;
+    }
 
+    .client-form-header h2 {
+        font-size: 22px;
+    }
 
+    .client-form-section {
+        padding: 20px 0;
+    }
+
+    .client-form-section input,
+    .client-form-section select,
+    .client-form-section textarea {
+        font-size: 16px;
+    }
+
+    .client-form-error {
+        overflow-wrap: anywhere;
+    }
+}

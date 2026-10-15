@@ -20,22 +20,40 @@
     --danger: #980c0c;
 }
 * {
-  box-sizing: border-box;   
+  box-sizing: border-box;
 }
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
 body{
+    margin: 0;
     font-family: "Sora", sans-serif;
 }
 
 .layout {
   display: flex;
+  width: 100%;
+  min-width: 0;
   min-height: 100vh;
-  background: rgba(255, 255, 255, 0.58);;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+input,
+select,
+textarea {
+  min-width: 0;
+  max-width: 100%;
 }
 
 /*SIDEBAR*/
 
 .sidebar {
   width: 250px;
+  flex: 0 0 250px;
   height: calc(100vh - 24px);
   margin: 12px;
   padding: 24px 18px;
@@ -180,6 +198,7 @@ body{
 
 .main-content {
   flex: 1;
+  min-width: 0;
   min-height: 100vh;
   padding: 40px;
   display: flex;
@@ -211,4 +230,79 @@ body{
 .clients-form-column,
 .clients-list-column {
   min-width: 0;
+}
+
+@media (max-width: 1200px) {
+  .clients-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 980px) {
+  .main-content {
+    padding: 28px;
+  }
+}
+
+@media (max-width: 700px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand user"
+      "nav nav";
+    gap: 8px 12px;
+    width: auto;
+    flex: 0 0 auto;
+    height: auto;
+    margin: 8px;
+    padding: 12px;
+  }
+
+  .sidebar-brand {
+    grid-area: brand;
+    min-width: 0;
+    margin: 0;
+  }
+
+  .sidebar-logo {
+    width: min(160px, 100%);
+  }
+
+  .sidebar-nav {
+    grid-area: nav;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .sidebar-nav a {
+    flex: 1 1 auto;
+    justify-content: center;
+    padding: 10px 12px;
+  }
+
+  .sidebar-user {
+    grid-area: user;
+    margin: 0;
+    padding: 0;
+    border-top: 0;
+  }
+
+  .sidebar-user > div {
+    min-width: 0;
+  }
+
+  .sidebar-user strong {
+    overflow-wrap: anywhere;
+  }
+
+  .main-content {
+    min-height: 0;
+    padding: 16px;
+    gap: 16px;
+  }
 }
