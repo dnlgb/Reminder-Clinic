@@ -1,6 +1,12 @@
 import { Bell } from "@phosphor-icons/react";
 import type { Notification } from "../types";
 
+const notificationTypeLabels: Record<Notification["type"], string> = {
+  reminder: "Reminder",
+  snooze: "Snoozed",
+  overdue: "Overdue",
+};
+
 export default function NotificationPanel({
   notifications,
   onMarkAsRead,
@@ -15,11 +21,18 @@ export default function NotificationPanel({
   return (
     <div className="notification-panel" role="dialog" aria-label="Notifications">
       <div className="notification-panel-header">
-        <div>
+        <div className="notification-panel-title">
           <h3>Notifications</h3>
-          <span>{unreadCount ? `${unreadCount} unread` : "No new notifications"}</span>
+          <span className={`notification-unread-count${unreadCount ? " has-unread" : ""}`}>
+            {unreadCount} unread
+          </span>
         </div>
-        <button type="button" onClick={onMarkAllAsRead} disabled={!unreadCount}>
+        <button
+          className="notification-mark-all"
+          type="button"
+          onClick={onMarkAllAsRead}
+          disabled={!unreadCount}
+        >
           Mark all as read
         </button>
       </div>
@@ -37,7 +50,15 @@ export default function NotificationPanel({
               className={`notification-item${notification.read_at ? " is-read" : " is-unread"}`}
               key={notification.id}
             >
-              <div>
+              <div className="notification-item-content">
+                <div className="notification-item-meta">
+                  <span className={`notification-type-label type-${notification.type}`}>
+                    {notificationTypeLabels[notification.type]}
+                  </span>
+                  {!notification.read_at && (
+                    <span className="notification-unread-dot" role="img" aria-label="Unread" />
+                  )}
+                </div>
                 <strong>{notification.title}</strong>
                 <p>{notification.message}</p>
                 <time dateTime={notification.created_at}>
@@ -45,7 +66,11 @@ export default function NotificationPanel({
                 </time>
               </div>
               {!notification.read_at && (
-                <button type="button" onClick={() => onMarkAsRead(notification.id)}>
+                <button
+                  className="notification-mark-read"
+                  type="button"
+                  onClick={() => onMarkAsRead(notification.id)}
+                >
                   Mark as read
                 </button>
               )}
